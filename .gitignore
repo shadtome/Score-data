@@ -1,5 +1,4 @@
 __pycache_
-data/
 get_data/__pycache__/
 get_data/Scrapers/__pycache__/
 get_data/data_wranglers/__pycache__/

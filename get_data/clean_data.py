@@ -11,8 +11,22 @@ def transfer_market_to_sql():
 
     dr = os.getcwd()
     dr = os.path.join(dr, 'data/transfermarket')
-    print(dr)
+    
 
     name = 'transfermarket'
+
+    csql.csvs_to_sql(csv_files=csv_files,name=name,path=dr)
+
+
+def understats_to_sql():
+    """This takes the various csv files from the understats website that we scraped
+    and combines it into a .db file for easy sql querys"""
+
+    csv_files = ['player_stats.csv','game_stats.csv']
+
+    dr = os.getcwd()
+    dr = os.path.join(dr,'data/understat')
+
+    name = 'understat'
 
     csql.csvs_to_sql(csv_files=csv_files,name=name,path=dr)
