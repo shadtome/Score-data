@@ -35,3 +35,21 @@ def get_European_soccer_data():
     kaggle.api.authenticate()
 
     kaggle.api.dataset_download_files(dataset='hugomathien/soccer',path=fd,unzip=True)  
+
+
+def get_understat_data():
+    """This is the scraped data from the Understat.com website.  It contains the players stats 
+    and the game stats"""
+
+    fd = os.getcwd()
+    fd = os.path.join(fd,'data')
+    if os.path.exists(fd)==False:
+        os.mkdir(fd)
+
+    fd = os.path.join(fd, 'understat')
+    if os.path.exists(fd)==False:
+        os.mkdir(fd)
+
+    kaggle.api.authenticate()
+    
+    kaggle.api.dataset_download_files(dataset='codytipton/understat-data',path=fd,unzip=True)

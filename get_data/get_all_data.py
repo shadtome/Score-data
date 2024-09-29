@@ -10,6 +10,7 @@ def get_all_kaggle_data():
     #Grab the data
     gk.get_European_soccer_data()
     gk.get_transfermarkt_data()
+    gk.get_understat_data()
     
 
 
@@ -19,7 +20,9 @@ def get_all_kaggle_data():
 
 def get_understat_data():
     """Get the understat data about players and clubs
-    This can take some time for the player data"""
+    This can take some time for the player data.
+    This will take 4 to 5 hours, it is better to just use the kaggle dataset 
+    I have uploaded."""
 
     #grab player stats
     uss.player_stats()
