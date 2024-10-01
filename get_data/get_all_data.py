@@ -22,7 +22,9 @@ def get_understat_data():
     """Get the understat data about players and clubs
     This can take some time for the player data.
     This will take 4 to 5 hours, it is better to just use the kaggle dataset 
-    I have uploaded."""
+    I have uploaded.
+    Furthermore, it you want updated data, you will need to run this agian, and it will replace the 
+    data with all the data plus the new one.  It is a tricky thing to scrape updates."""
 
     #grab player stats
     uss.player_stats()
@@ -31,5 +33,7 @@ def get_understat_data():
 
     #Combine together to make a .db file
     clean_data.understats_to_sql()
+
+
 
     

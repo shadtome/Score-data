@@ -73,7 +73,7 @@ class get_game_stats:
         self.data = self.get_stats()
 
     def get_stats(self):
-        column = ['id','league','season','club_name','home_away','xG','npxG','npxGA','ppda','ppda_allowed','deep','deep_allowed',
+        column = ['id','league','season','club_name','home_away','xG','xGA','npxG','npxGA','ppda','ppda_allowed','deep','deep_allowed',
            'scored','missed','xpts','result','date','wins','draws','loses','pts','npxGD']
         column_data = dict()
         for c in column:
