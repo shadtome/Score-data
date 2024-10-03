@@ -11,6 +11,7 @@ def get_all_kaggle_data():
     gk.get_European_soccer_data()
     gk.get_transfermarkt_data()
     gk.get_understat_data()
+    gk.get_understat_lineup_data()
     
 
 

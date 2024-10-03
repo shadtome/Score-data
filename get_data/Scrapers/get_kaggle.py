@@ -50,6 +50,28 @@ def get_understat_data():
     if os.path.exists(fd)==False:
         os.mkdir(fd)
 
+    fd = os.path.join(fd,'understat_season_data')
+
     kaggle.api.authenticate()
     
     kaggle.api.dataset_download_files(dataset='codytipton/understat-data',path=fd,unzip=True)
+
+def get_understat_lineup_data():
+    """This is the data that was scraped from the understat.co website, which contains
+    more detailed information, in particular, it contains the individual stats per player in each match they played
+    in."""
+    fd = os.getcwd()
+    fd = os.path.join(fd,'data')
+    if os.path.exists(fd)==False:
+        os.mkdir(fd)
+
+    fd = os.path.join(fd, 'understat')
+    if os.path.exists(fd)==False:
+        os.mkdir(fd)
+
+    fd = os.path.join(fd,'understat_game_data')
+
+    kaggle.api.authenticate()
+
+    kaggle.api.dataset_download_files(dataset='codytipton/player-stats-per-game-understat',path=fd,unzip=True)
+
