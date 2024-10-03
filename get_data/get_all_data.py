@@ -35,5 +35,13 @@ def get_understat_data():
     clean_data.understats_to_sql()
 
 
+def get_understat_game_lineup_data():
+    """Get games data with the events recorded (mostly shots) and each individual players stats for that game"""
+
+    uss.get_lineup_stats_game()
+
+    clean_data.understats_lineup_to_sql()
+
+
 
     

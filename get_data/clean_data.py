@@ -25,8 +25,21 @@ def understats_to_sql():
     csv_files = ['player_stats.csv','game_stats.csv']
 
     dr = os.getcwd()
-    dr = os.path.join(dr,'data/understat')
+    dr = os.path.join(dr,'data/understat/understat_season_data')
 
     name = 'understat'
+
+    csql.csvs_to_sql(csv_files=csv_files,name=name,path=dr)
+
+def understats_lineup_to_sql():
+    """This takes the individual game stats with events and players, scrapes it
+    and also combines them together into a .db file for easy sql querys"""
+
+    csv_files = ['lineup_stats.csv','game_events.csv','general_game_stats.csv','clubs.csv']
+
+    dr = os.getcwd()
+    dr = os.path.join(dr,'data/understat/understat_game_data')
+
+    name = 'understat_lineup_game_stats'
 
     csql.csvs_to_sql(csv_files=csv_files,name=name,path=dr)
