@@ -1,4 +1,5 @@
 __pycache_
+data_explore/combined_output.csv
 data/
 get_data/__pycache__/
 get_data/Scrapers/__pycache__/
