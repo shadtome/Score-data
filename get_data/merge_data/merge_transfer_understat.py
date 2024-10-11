@@ -5,98 +5,156 @@ import sqlite3 as sql
 
 class merge_data:
     def __init__(self):
-        self.understat_df = self.get_understat()
+        self.lineup_df = self.get_understat()
         self.transfer_df = self.get_transfer()
-        self.combine()
+        self.combined = self.combine()
+        self.save_file()
+        print('DONE!')
 
     def get_understat(self):
         con = sql.connect('data/understat/understat_game_data/understat_lineup_game_stats.db')
 
         lineup = pd.read_sql("""SELECT  game.date,
-                                        player.player AS name,
-                                        clubs.club,
-                                        player.goals,
-                                        player.own_goals,
-                                        player.shots,
-                                        player.xG, 
-                                        player.time,
-                                        player.position,
-                                        player.h_a,
-                                        player.yellow_card,
-                                        player.red_card,
-                                        player.key_passes,
-                                        player.assists,
-                                        player.xA,
-                                        player.xGChain,
-                                        player.xGBuildup
-                    FROM lineup_stats AS player
-                    JOIN clubs ON clubs.club_id = player.team_id AND clubs.season = game.season
-                    JOIN general_game_stats AS game ON game.id = player.match_id
+                            LOWER(TRIM(p.player)) as name,
+                            LOWER(SUBSTR(p.player,1,INSTR(p.player,' ')-1)) AS first_name,
+                            LOWER(SUBSTR(SUBSTR(p.player,INSTR(p.player,' ')+1 ),INSTR(SUBSTR(p.player,INSTR(p.player,' ')+1 ),' ')+1 )) AS last_name,
+                            clubs.club,
+                            p.goals,
+                            p.own_goals,
+                            p.shots,
+                            p.xG, 
+                            p.time,
+                            p.position AS game_position,
+                            p.h_a,
+                            p.yellow_card,
+                            p.red_card,
+                            p.key_passes,
+                            p.assists,
+                            p.xA,
+                            p.xGChain,
+                            p.xGBuildup
+        FROM lineup_stats AS p
+        JOIN clubs ON clubs.club_id = p.team_id AND clubs.season = game.season
+        JOIN general_game_stats AS game ON game.id = p.match_id
                     """,con)
         con.close()
         lineup['date'] = pd.to_datetime(lineup['date'])
         lineup = lineup.dropna(subset=['date'])
+        lineup = lineup.sort_values(by='date')
         return lineup
     
     def get_transfer(self):
         con = sql.connect('data/transfermarket/transfermarket.db')
-        transfer = pd.read_sql("""SELECT    players.name,
-                                    players.date_of_birth,
-                                    players.sub_position,
-                                    players.position,
-                                    players.foot,
-                                    players.height_in_cm,
-                                    player_vals.date,
-                                    player_vals.market_value_in_eur AS market_value_in_eur_x
-                            FROM players
-                            JOIN player_valuations AS player_vals ON player_vals.player_id = players.player_id
-                            ORDER BY players.name, player_vals.date
+        transfer = pd.read_sql("""WITH clubhistory AS (
+                        
+                        WITH transfer_history AS (
+                            -- Get the transfer history with start and end dates
+                        SELECT 
+                            t.player_id,
+                            COALESCE(LAG(t.transfer_date) OVER (PARTITION BY t.player_id ORDER BY t.transfer_date), DATE(p.date_of_birth)) AS start_date,
+                            t.transfer_date AS end_date,
+                            c1.name AS club_name
+                        FROM 
+                            transfers AS t
+                        JOIN 
+                            clubs AS c1 ON c1.club_id = t.from_club_id
+                        JOIN 
+                            players AS p ON p.player_id = t.player_id
+                    ),
+                    current_club AS (
+                        -- Get the current club (most recent transfer) with CURRENT_DATE as end date
+                        SELECT 
+                            t.player_id,
+                            t.transfer_date AS start_date,
+                            CURRENT_DATE AS end_date,
+                            c2.name AS club_name
+                        FROM transfers AS t
+                        JOIN clubs AS c2 ON c2.club_id = t.to_club_id
+                        ORDER BY t.transfer_date DESC
+                        LIMIT 1
+                    )
+
+                        -- Combine the history and current club
+                        SELECT * FROM transfer_history
+                        UNION ALL
+                        SELECT * FROM current_club
+                        ORDER BY start_date, end_date)
+
+                        
+                        
+                        
+                        SELECT  LOWER(TRIM(p.name)) as name,
+                                LOWER(SUBSTR(p.name,1,INSTR(p.name,' ')-1)) AS first_name,
+                                LOWER(SUBSTR(SUBSTR(p.name,INSTR(p.name,' ')+1 ),INSTR(SUBSTR(p.name,INSTR(p.name,' ')+1 ),' ')+1 )) AS last_name,
+                                p.date_of_birth AS date_of_birth,
+                                p.sub_position AS sub_position,
+                                p.position AS position,
+                                p.foot AS foot,
+                                p.height_in_cm AS height_in_cm,
+                                pv.date AS date,
+                                'no' AS transfered,
+                                CASE 
+                                        WHEN  cb.start_date < pv.date AND pv.date <= cb.end_date THEN cb.club_name
+                                        ELSE c.name
+                                END AS transfered_from,
+                                CASE 
+                                        WHEN cb.start_date < pv.date AND pv.date <= cb.end_date THEN cb.club_name
+                                        ELSE c.name
+                                END AS transfered_to,
+                                0.0 AS transfer_fee,
+                                pv.market_value_in_eur AS market_value_in_eur
+                    FROM players AS p
+                    JOIN player_valuations AS pv ON pv.player_id = p.player_id
+                    LEFT JOIN clubhistory AS cb ON cb.player_id = p.player_id 
+                        AND (cb.start_date < pv.date AND pv.date <= cb.end_date)
+                    JOIN clubs AS c ON c.club_id = pv.current_club_id
+                    UNION ALL
+                    SELECT
+                                LOWER(TRIM(p.name)) as name,
+                                LOWER(SUBSTR(p.name,1,INSTR(p.name,' ')-1)) AS first_name,
+                                LOWER(SUBSTR(SUBSTR(p.name,INSTR(p.name,' ')+1 ),INSTR(SUBSTR(p.name,INSTR(p.name,' ')+1 ),' ')+1 )) AS last_name,
+                                p.date_of_birth AS date_of_birth,
+                                p.sub_position AS sub_position,
+                                p.position AS position,
+                                p.foot AS foot,
+                                p.height_in_cm AS height_in_cm,
+                                t.transfer_date AS date,
+                                'yes' AS transfered,
+                                c1.name AS transfered_from,
+                                c2.name AS transfered_to,
+                                t.transfer_fee AS transfer_fee,
+                                t.market_value_in_eur AS market_value_in_eur
+                    FROM players AS p
+                    JOIN transfers AS t ON t.player_id = p.player_id
+                    JOIN clubs AS c1 ON c1.club_id = t.from_club_id
+                    JOIN clubs AS c2 ON c2.club_id = t.to_club_id
+                    ORDER BY name, date
                             """,con)
         con.close()
         transfer['date'] = pd.to_datetime(transfer['date'])
         transfer = transfer.dropna(subset=['date'])
+        transfer = transfer.sort_values(by='date')
         return transfer
     
     def combine(self):
-        # Initialize an empty list to store processed chunks
-        chunk_list = []
-
-        chunk_size=100000 #change according to system specs. With this chunk_size, it took ~12 minutes on my computer
-
-        # Process the lineup DataFrame in chunks
+        combined = pd.merge_asof(
+                    self.lineup_df,                 
+                    self.transfer_df,               
+                    by=['last_name','first_name'],              
+                    on='date',              
+                    direction='nearest',   
+                    )
         
-        for start in tqdm(range(0, len(self.understat_df), chunk_size),leave=True,desc='chunks',colour='green'):
-            chunk = self.understat_df.iloc[start:start + chunk_size]
-            merged_chunk = self.process_chunk(chunk)
-            chunk_list.append(merged_chunk)
-            
-
-        # Concatenate all processed chunks
-        result = pd.concat(chunk_list).reset_index(drop=True)
-        result = result.drop_duplicates()
+        combined = combined.dropna()
+        combined = combined.drop(columns=['name_y'])
+        combined = combined.rename(columns={'name_x':'name'})
+        return combined
+    
+    def save_file(self):
         save_path = os.getcwd()
         save_path = os.path.join(save_path,'data/main_data')
         if os.path.exists(save_path)==False:
             os.mkdir(save_path)
+        save_path = os.path.join(save_path,'main_data_understat.csv')
+        self.combined.to_csv(save_path,index=False)
 
-        save_path = os.path.join(save_path,'main_data.csv')
-        result.to_csv(save_path,index=False)
-
-
-    def process_chunk(self,chunk):
-        chunk_sorted = chunk.sort_values(['name', 'date']).reset_index(drop=True)
-
-        merged_list = []
-        for name, group in chunk_sorted.groupby('name'):
-            if name in self.transfer_df['name'].values:
-                transfer_data = self.transfer_df[self.transfer_df['name'] == name]
-                transfer_data = transfer_data.sort_values('date').reset_index(drop=True)
-                merged_group = pd.merge_asof(
-                    group,
-                    transfer_data[['date', 'market_value_in_eur_x']],
-                    on='date',
-                    direction='backward'
-                )
-                merged_list.append(merged_group)
-        
-        return pd.concat(merged_list)

@@ -25,3 +25,5 @@ dependencies:
       - seaborn == 0.13.2
       - statsbombpy
       - kaggle
+      - rapidfuzz
+      - install fuzzywuzzy
