@@ -27,3 +27,4 @@ dependencies:
       - kaggle
       - rapidfuzz
       - install fuzzywuzzy
+      - selenium
