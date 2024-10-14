@@ -19,6 +19,8 @@ class merge_data:
                             LOWER(SUBSTR(p.player,1,INSTR(p.player,' ')-1)) AS first_name,
                             LOWER(SUBSTR(SUBSTR(p.player,INSTR(p.player,' ')+1 ),INSTR(SUBSTR(p.player,INSTR(p.player,' ')+1 ),' ')+1 )) AS last_name,
                             clubs.club,
+                            game.season,
+                            game.league,
                             p.goals,
                             p.own_goals,
                             p.shots,
