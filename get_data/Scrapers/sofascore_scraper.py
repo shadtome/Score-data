@@ -71,6 +71,7 @@ class sofascore:
             for match in match_links:
                 match_url = match.get_attribute('href')
                 match_id = match_url.split('#id:')[-1]
+                print(match_id)
                 if match_id not in match_ids:
                     match_ids.append(match_id)
                     print(f"Found match: {match_url} with Match ID: {match_id}")
@@ -123,7 +124,7 @@ class sofascore:
             except Exception as e:
                 print(f"An error occurred during scraping: {e}")
                 break
-
+        self.driver.close()
         return match_ids, round_click_count
     
     
@@ -177,6 +178,7 @@ class get_all:
                                     else:
                                         data[c].append(player[column][c])
             data_df = pd.DataFrame(data)
+            conn.close()
             return data_df
     
     def get_match_ids(self):
@@ -186,7 +188,7 @@ class get_all:
                 for league_name, data in league.items():
                     for league_id,seasons in data.items():
                         for season_id in seasons:
-                            match_ids.append(sofascore(country,league_name,league_id,season_id))
+                            match_ids += sofascore(country,league_name,league_id,season_id).match_ids
         return match_ids
 
         
