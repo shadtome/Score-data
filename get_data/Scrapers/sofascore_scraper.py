@@ -11,6 +11,7 @@ import requests
 import pandas as pd
 import os
 from datetime import datetime
+import random
 
 
 
@@ -157,15 +158,7 @@ class sofascore:
 class get_all:
     def __init__(self):
         self.id_dict = self.get_league_season_ids()
-        #self.id_dict = {
-        #                    "england": {
-        #                        "premier-league": {
-        #                            "league_id": 17,
-        #                            "seasons": {
-        #                                "23/24": 52186}
-        #                        }
-        #                    }
-        #}
+        #self.id_dict = {"england": {"premier-league": {"league_id": 17,"seasons": {"23/24": 52186}}}}
         self.match_ids = self.get_match_ids()
         self.data = self.get_data()
         self.save_data()
@@ -173,6 +166,7 @@ class get_all:
 
     def get_data(self):
         top_columns = ['name','shortName','position','height','dateOfBirthTimestamp']
+        game_stats_columns = ['team','date','league','season']
         columns = ['minutesPlayed','rating'
                    'accuratePass','totalLongBalls','accurateLongBalls','keyPass','totalPass','totalCross','accurateCross'
                    'goalAssist',
@@ -189,10 +183,33 @@ class get_all:
         data = dict()
         for tc in top_columns:
             data[tc]=[]
+
+        for gc in game_stats_columns:
+            data[gc]=[]
+
         for c in columns:
             data[c] = []
         num_players = 0
         for id_x in tqdm(self.match_ids,leave=False,desc='main loop',position=0):
+            time.sleep(random.randint(0,2))
+            #lets get match data
+            
+            url_date = "https://www.sofascore.com/api/v1/event/"+id_x
+            parsed_url_date = urlparse(url_date)
+            conn_date = http.client.HTTPSConnection(parsed_url_date.netloc)
+            conn_date.request("GET",parsed_url_date.path)
+            res_date = conn_date.getresponse()
+            date_json = res_date.read()
+            json_data_date = json.loads(date_json.decode("utf-8"))
+            date = datetime.fromtimestamp(json_data_date['event']['startTimestamp'])
+            h_team = json_data_date['event']['homeTeam']['name']
+            a_team = json_data_date['event']['awayTeam']['name']
+            league = json_data_date['event']['tournament']['name']
+            season = json_data_date['event']['season']['year']
+            conn_date.close()
+
+
+            #player stats
             url = "https://www.sofascore.com/api/v1/event/"+id_x+"/lineups"
             parsed_url = urlparse(url)
             conn = http.client.HTTPSConnection(parsed_url.netloc)
@@ -200,6 +217,9 @@ class get_all:
             res = conn.getresponse()
             data_json = res.read()
             jsondata = json.loads(data_json.decode("utf-8"))
+
+            
+
             
             
             for x,y in jsondata.items():
@@ -213,6 +233,13 @@ class get_all:
                                 data[tc].append(datetime.fromtimestamp(player['player'][tc]))
                             else:
                                 data[tc].append(player['player'][tc])
+                        if x == 'home':
+                            data['team'].append(h_team)
+                        if x == 'away':
+                            data['team'].append(a_team)
+                        data['date'].append(date)
+                        data['league'].append(league)
+                        data['season'].append(season)
                         if 'statistics' in player.keys():
                             for c in columns:
                                 
