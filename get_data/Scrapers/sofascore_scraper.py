@@ -115,9 +115,11 @@ class sofascore:
                     
                     match_id = match_url.split('#id:')[-1]
                     
+                    
                     if match_id not in match_ids:
                         current_ids.append(match_id)
                         #print(f"Found match: {match_url} with Match ID: {match_id}")
+                
 
                 # if len(current_ids) >= expected_count or not expected_count:
                     
@@ -129,9 +131,11 @@ class sofascore:
                 #         self.refresh_page()
                 #         time.sleep(5)
 
-
+                
             except Exception as e:
                 print(f"Error occurred during match collection: {e}")
+        
+        match_ids+= current_ids
         
         # if not collected:
         #     print("Warning: Could not collect the expected number of match IDs.")
@@ -232,6 +236,7 @@ class sofascore:
 
         # Collect match IDs for the initial round
         self.collect_match_ids(match_ids, round_click_count + 1)
+        
 
         while round_click_count < (total_rounds - 1):  # Loop for 37 left arrow clicks
             try:
@@ -249,6 +254,7 @@ class sofascore:
 
                 # Collect match IDs for the current round
                 self.collect_match_ids(match_ids, round_click_count + 1)
+                print(match_ids)
 
             except Exception as e:
                 print(f"An error occurred during scraping: {e}")
@@ -256,6 +262,7 @@ class sofascore:
                 if not self.refresh_page():  
                     break
         self.driver.close()
+        
         return match_ids, round_click_count
 
     def navigate_to_last_round(self):
@@ -290,7 +297,9 @@ class get_all_ids:
                     xr = season_v['rounds']
                     xm = season_v['matches']
                     list_ids = sofascore(country,league,league_v['league_id'],season_v['id'],xr,xm).match_ids
+                    
                     list_ids = list(set(list_ids))
+                    
                     seasons_map[season_year] = {"match_ids": list_ids,"matches": xm,"name": season_v['name']}
                 league_map[league] = seasons_map
             match_ids[country] = league_map
