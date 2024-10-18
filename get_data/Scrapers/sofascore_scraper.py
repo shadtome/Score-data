@@ -119,22 +119,22 @@ class sofascore:
                         current_ids.append(match_id)
                         #print(f"Found match: {match_url} with Match ID: {match_id}")
 
-                if len(current_ids) >= expected_count or not expected_count:
+                # if len(current_ids) >= expected_count or not expected_count:
                     
-                    match_ids.extend([mid for mid in current_ids if mid not in match_ids])
-                    collected = True
-                else:
-                    print(f"Attempt {attempt}: Insufficient matches collected: {len(current_ids)}<{expected_count}, retrying...")
-                    if attempt < retry_attempts:
-                        self.refresh_page()
-                        time.sleep(5)
+                #     match_ids.extend([mid for mid in current_ids if mid not in match_ids])
+                #     collected = True
+                # else:
+                #     print(f"Attempt {attempt}: Insufficient matches collected: {len(current_ids)}<{expected_count}, retrying...")
+                #     if attempt < retry_attempts:
+                #         self.refresh_page()
+                #         time.sleep(5)
 
 
             except Exception as e:
                 print(f"Error occurred during match collection: {e}")
         
-        if not collected:
-            print("Warning: Could not collect the expected number of match IDs.")
+        # if not collected:
+        #     print("Warning: Could not collect the expected number of match IDs.")
 
     def refresh_page(self, retries=3):
         """Refresh the page if match loading issues occur."""
@@ -192,6 +192,31 @@ class sofascore:
             print(f"Failed to click the left arrow button: {e}")
         return False
 
+    def find_and_click_right_arrow(self):
+        """Find and click only the right arrow button based on its position relative to other buttons."""
+        try:
+            # Collect all buttons with the shared selector
+            arrows = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, "button.Button.iCnTrv"))
+            )
+
+            right_arrow = None
+            max_position = float('-inf')
+
+            # Find the button to the right based on the position
+            for arrow in arrows:
+                position = arrow.location['x']
+                if position > max_position:
+                    max_position = position
+                    right_arrow = arrow
+
+            if right_arrow and right_arrow.is_displayed() and right_arrow.is_enabled():
+                self.driver.execute_script("arguments[0].click();", right_arrow)
+                return True
+        except Exception as e:
+            print(f"Failed to click the right arrow button: {e}")
+        return False
+
     def scrape_matches(self):
         """Main function to scrape match IDs from the Premier League page."""
         match_ids = []
@@ -201,6 +226,9 @@ class sofascore:
         # Navigate to a specific tournament page for the desired season
         self.navigate_to_page(f"https://www.sofascore.com/tournament/football/{self.country}/{self.league}/{self.league_id}#id:{self.season_id}")
         self.scroll_to_matches()
+
+        # Navigate to the last round
+        self.navigate_to_last_round()
 
         # Collect match IDs for the initial round
         self.collect_match_ids(match_ids, round_click_count + 1)
@@ -230,6 +258,15 @@ class sofascore:
         self.driver.close()
         return match_ids, round_click_count
 
+    def navigate_to_last_round(self):
+        """Navigate to the last round by clicking the right arrow until it disappears."""
+        try:
+            while True:
+                if not self.find_and_click_right_arrow():
+                    break
+                time.sleep(2)  # Allow time for the page to update
+        except Exception as e:
+            print(f"Error navigating to last round: {e}")
 
  
 class get_all_ids:
@@ -242,7 +279,7 @@ class get_all_ids:
         #id_dict = self.league_season_ids_from_file()
 
         id_dict = {"england": {"premier-league": {"league_id": 17,"seasons": {"23/24": {"id":52186,"rounds":38,"matches":380, 'name': 'Premier League'},
-                                                                               "22/23": 41886, "rounds": 38, "matches": 380, "name": "Premier-League"}}},
+                                                                                "22/23": {"id":41886, "rounds": 38, "matches": 380, "name": "Premier-League"}}}},
                     "spain" : {"laliga": {"league_id": 8, "seasons": {"23/24": {"id":52376,"rounds":38,"matches":380,"name":"LaLiga"}}}}}
         
         for country,country_v in tqdm(id_dict.items(),leave=False,desc='country',position=0):

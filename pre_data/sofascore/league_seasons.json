@@ -3,7 +3,7 @@
         "premier-league": {
             "league_id": 17,
             "seasons": {
-                "24/25": {"id":61627,"rounds": 8, "matches": 80,"name": "Premier League"},
+                "24/25": {"id":61627,"rounds": 38, "matches": 380,"name": "Premier League"},
                 "23/24": {"id":52186,"rounds": 38, "matches": 380,"name": "Premier League"},
                 "22/23": {"id":41886,"rounds": 38, "matches": 380,"name": "Premier League"},
                 "21/22": {"id":37036,"rounds": 38, "matches": 380,"name": "Premier League"},
@@ -19,7 +19,7 @@
         "championship": {
             "league_id": 18,
             "seasons": {
-                "24/25": {"id":61961,"rounds": 11, "matches": 132,"name": "Championship"},
+                "24/25": {"id":61961,"rounds": 46, "matches": 552,"name": "Championship"},
                 "23/24": {"id":52367,"rounds": 48, "matches": 557,"name": "Championship"},
                 "22/23": {"id":42401,"rounds": 48, "matches": 557,"name": "Championship"},
                 "21/22": {"id":37154,"rounds": 48, "matches": 557,"name": "Championship"},
@@ -37,7 +37,7 @@
         "laliga": {
             "league_id": 8,
             "seasons": {
-                "24/25": {"id":61643,"rounds": 10, "matches": 100,"name": "LaLiga"},
+                "24/25": {"id":61643,"rounds": 38, "matches": 380,"name": "LaLiga"},
                 "23/24": {"id":52376,"rounds": 38, "matches": 380,"name": "LaLiga"},
                 "22/23": {"id":42409,"rounds": 38, "matches": 380,"name": "LaLiga"},
                 "21/22": {"id":37223,"rounds": 38, "matches": 380,"name": "LaLiga"},
@@ -55,7 +55,7 @@
         "serie-a": {
             "league_id": 23,
             "seasons": {
-                "24/25": {"id":63515,"rounds": 8, "matches": 80,"name": "Serie A"},
+                "24/25": {"id":63515,"rounds": 38, "matches": 380,"name": "Serie A"},
                 "23/24": {"id":52760,"rounds": 38, "matches": 380,"name": "Serie A"},
                 "22/23": {"id":42415,"rounds": 39, "matches": 381,"name": "Serie A"},
                 "21/22": {"id":37475,"rounds": 38, "matches": 380,"name": "Serie A"},
@@ -73,7 +73,7 @@
         "bundesliga": {
             "league_id": 35,
             "seasons": {
-                "24/25": {"id":63516,"rounds": 7, "matches": 63,"name": "Bundesliga"},
+                "24/25": {"id":63516,"rounds": 34, "matches": 306,"name": "Bundesliga"},
                 "23/24": {"id":52608,"rounds": 35, "matches": 308,"name": "Bundesliga"},
                 "22/23": {"id":42268,"rounds": 35, "matches": 308,"name": "Bundesliga"},
                 "21/22": {"id":37166,"rounds": 35, "matches": 308,"name": "Bundesliga"},
@@ -91,7 +91,7 @@
         "ligue-1": {
             "league_id": 34,
             "seasons": {
-                "24/25": {"id":61736,"rounds": 7, "matches": 63,"name": "Ligue 1"},
+                "24/25": {"id":61736,"rounds": 34, "matches": 306,"name": "Ligue 1"},
                 "23/24": {"id":52571,"rounds": 37, "matches": 310,"name": "Ligue 1"},
                 "22/23": {"id":42273,"rounds": 38, "matches": 380,"name": "Ligue 1"},
                 "21/22": {"id":37167,"rounds": 41, "matches": 384,"name": "Ligue 1"},
@@ -108,7 +108,7 @@
         "liga-portugal-betclic": {
             "league_id": 238,
             "seasons": {
-                "24/25":	{"id":63670,"rounds": 9, "matches": 81,"name": "Liga Portugal Betclic"},
+                "24/25":	{"id":63670,"rounds": 34, "matches": 306,"name": "Liga Portugal Betclic"},
                 "23/24":	{"id":52769,"rounds": 35, "matches": 308,"name": "Liga Portugal Betclic"},
                 "22/23":	{"id":42655,"rounds": 35, "matches": 308,"name": "Liga Portugal Betclic"},
                 "21/22":	{"id":37358,"rounds": 35, "matches": 308,"name": "Liga Portugal Betclic"},
@@ -126,7 +126,7 @@
         "pro-league": {
             "league_id": 38,
             "seasons": {
-                "24/25":	{"id":61459,"rounds": 11, "matches": 88,"name": "Pro League"},
+                "24/25":	{"id":61459,"rounds": 30, "matches": 240,"name": "Pro League"},
                 "23/24":	{"id":52383,"rounds": 43, "matches": 323,"name": "Pro League"},
                 "22/23":	{"id":42404,"rounds": 34, "matches": 330,"name": "Pro League"},
                 "21/22":	{"id":36894,"rounds": 40, "matches": 332,"name": "Pro League"},
@@ -138,7 +138,7 @@
         "superliga": {
             "league_id": 39,
             "seasons": {
-                "24/25":	{"id":61326,"rounds": 12, "matches": 72,"name": "Superliga"},
+                "24/25":	{"id":61326,"rounds": 22, "matches": 132,"name": "Superliga"},
                 "23/24":	{"id":52172,"rounds": 33, "matches": 193,"name": "Superliga"},
                 "22/23":	{"id":41914,"rounds": 33, "matches": 193,"name": "Superliga"},
                 "21/22":	{"id":36834,"rounds": 33, "matches": 193,"name": "Superliga"},
@@ -151,7 +151,7 @@
         "eredivisie": {
             "league_id": 37,
             "seasons": {
-                "24/25":	{"id":61666,"rounds": 9, "matches": 81,"name": "Eredivisie"},
+                "24/25":	{"id":61666,"rounds": 34, "matches": 306,"name": "Eredivisie"},
                 "23/24":	{"id":52554,"rounds": 39, "matches": 309,"name": "Eredivisie"},
                 "22/23":	{"id":42256,"rounds": 39, "matches": 312,"name": "Eredivisie"},
                 "21/22":	{"id":36890,"rounds": 39, "matches": 312,"name": "Eredivisie"},
