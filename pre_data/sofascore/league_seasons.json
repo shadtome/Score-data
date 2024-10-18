@@ -3,33 +3,33 @@
         "premier-league": {
             "league_id": 17,
             "seasons": {
-                "24/25": 61627,
-                "23/24": 52186,
-                "22/23": 41886,
-                "21/22": 37036,
-                "20/21": 29415,
-                "19/20": 23776,
-                "18/19": 17359,
-                "17/18": 13380,
-                "16/17": 11733,
-                "15/16": 10356,
-                "14/15": 8186
+                "24/25": {"id":61627,"rounds": 8, "matches": 80,"name": "Premier League"},
+                "23/24": {"id":52186,"rounds": 38, "matches": 380,"name": "Premier League"},
+                "22/23": {"id":41886,"rounds": 38, "matches": 380,"name": "Premier League"},
+                "21/22": {"id":37036,"rounds": 38, "matches": 380,"name": "Premier League"},
+                "20/21": {"id":29415,"rounds": 38, "matches": 380,"name": "Premier League"},
+                "19/20": {"id":23776,"rounds": 38, "matches": 380,"name": "Premier League"},
+                "18/19": {"id":17359,"rounds": 38, "matches": 380,"name": "Premier League"},
+                "17/18": {"id":13380,"rounds": 38, "matches": 380,"name": "Premier League"},
+                "16/17": {"id":11733,"rounds": 38, "matches": 380,"name": "Premier League"},
+                "15/16": {"id":10356,"rounds": 38, "matches": 380,"name": "Premier League"},
+                "14/15": {"id":8186, "rounds": 38, "matches": 380,"name": "Premier League"}
             }
         },
         "championship": {
             "league_id": 18,
             "seasons": {
-                "24/25": 61961,
-                "23/24": 52367,
-                "22/23": 42401,
-                "21/22": 37154,
-                "20/21": 29438,
-                "19/20": 23976,
-                "18/19": 17473,
-                "17/18": 13429,
-                "16/17": 11784,
-                "15/16": 10358,
-                "14/15": 8188
+                "24/25": {"id":61961,"rounds": 11, "matches": 132,"name": "Championship"},
+                "23/24": {"id":52367,"rounds": 48, "matches": 557,"name": "Championship"},
+                "22/23": {"id":42401,"rounds": 48, "matches": 557,"name": "Championship"},
+                "21/22": {"id":37154,"rounds": 48, "matches": 557,"name": "Championship"},
+                "20/21": {"id":29438,"rounds": 48, "matches": 557,"name": "Championship"},
+                "19/20": {"id":23976,"rounds": 48, "matches": 557,"name": "Championship"},
+                "18/19": {"id":17473,"rounds": 48, "matches": 557,"name": "Championship"},
+                "17/18": {"id":13429,"rounds": 48, "matches": 557,"name": "Championship"},
+                "16/17": {"id":11784,"rounds": 48, "matches": 557,"name": "Championship"},
+                "15/16": {"id":10358,"rounds": 48, "matches": 557,"name": "Championship"},
+                "14/15": {"id":8188, "rounds": 48, "matches": 557,"name": "Championship"}
             }
         }
     },
@@ -37,17 +37,17 @@
         "laliga": {
             "league_id": 8,
             "seasons": {
-                "24/25": 61643,
-                "23/24": 52376,
-                "22/23": 42409,
-                "21/22": 37223,
-                "20/21": 32501,
-                "19/20": 24127,
-                "18/19": 18020,
-                "17/18": 13662,
-                "16/17": 11906,
-                "15/16": 10495,
-                "14/15": 8578
+                "24/25": {"id":61643,"rounds": 10, "matches": 100,"name": "LaLiga"},
+                "23/24": {"id":52376,"rounds": 38, "matches": 380,"name": "LaLiga"},
+                "22/23": {"id":42409,"rounds": 38, "matches": 380,"name": "LaLiga"},
+                "21/22": {"id":37223,"rounds": 38, "matches": 380,"name": "LaLiga"},
+                "20/21": {"id":32501,"rounds": 38, "matches": 380,"name": "LaLiga"},
+                "19/20": {"id":24127,"rounds": 38, "matches": 380,"name": "LaLiga"},
+                "18/19": {"id":18020,"rounds": 38, "matches": 380,"name": "LaLiga"},
+                "17/18": {"id":13662,"rounds": 38, "matches": 380,"name": "LaLiga"},
+                "16/17": {"id":11906,"rounds": 38, "matches": 380,"name": "LaLiga"},
+                "15/16": {"id":10495,"rounds": 38, "matches": 380,"name": "LaLiga"},
+                "14/15": {"id":8578,"rounds": 38, "matches": 380,"name": "LaLiga"}
             }
         }
     },
@@ -55,17 +55,17 @@
         "serie-a": {
             "league_id": 23,
             "seasons": {
-                "24/25": 63515,
-                "23/24": 52760,
-                "22/23": 42415,
-                "21/22": 37475,
-                "20/21": 32523,
-                "19/20": 24644,
-                "18/19": 17932,
-                "17/18": 13768,
-                "16/17": 11966,
-                "15/16": 10596,
-                "14/15": 8618
+                "24/25": {"id":63515,"rounds": 8, "matches": 80,"name": "Serie A"},
+                "23/24": {"id":52760,"rounds": 38, "matches": 380,"name": "Serie A"},
+                "22/23": {"id":42415,"rounds": 39, "matches": 381,"name": "Serie A"},
+                "21/22": {"id":37475,"rounds": 38, "matches": 380,"name": "Serie A"},
+                "20/21": {"id":32523,"rounds": 38, "matches": 380,"name": "Serie A"},
+                "19/20": {"id":24644,"rounds": 38, "matches": 380,"name": "Serie A"},
+                "18/19": {"id":17932,"rounds": 38, "matches": 380,"name": "Serie A"},
+                "17/18": {"id":13768,"rounds": 38, "matches": 380,"name": "Serie A"},
+                "16/17": {"id":11966,"rounds": 38, "matches": 380,"name": "Serie A"},
+                "15/16": {"id":10596,"rounds": 38, "matches": 380,"name": "Serie A"},
+                "14/15": {"id":8618, "rounds": 38, "matches": 380,"name": "Serie A"}
             }
         }
     },
@@ -73,17 +73,17 @@
         "bundesliga": {
             "league_id": 35,
             "seasons": {
-                "24/25": 63516,
-                "23/24": 52608,
-                "22/23": 42268,
-                "21/22": 37166,
-                "20/21": 28210,
-                "19/20": 23538,
-                "18/19": 17597,
-                "17/18": 13477,
-                "16/17": 11818,
-                "15/16": 10419,
-                "14/15": 8238
+                "24/25": {"id":63516,"rounds": 7, "matches": 63,"name": "Bundesliga"},
+                "23/24": {"id":52608,"rounds": 35, "matches": 308,"name": "Bundesliga"},
+                "22/23": {"id":42268,"rounds": 35, "matches": 308,"name": "Bundesliga"},
+                "21/22": {"id":37166,"rounds": 35, "matches": 308,"name": "Bundesliga"},
+                "20/21": {"id":28210,"rounds": 35, "matches": 308,"name": "Bundesliga"},
+                "19/20": {"id":23538,"rounds": 35, "matches": 308,"name": "Bundesliga"},
+                "18/19": {"id":17597,"rounds": 35, "matches": 308,"name": "Bundesliga"},
+                "17/18": {"id":13477,"rounds": 35, "matches": 308,"name": "Bundesliga"},
+                "16/17": {"id":11818,"rounds": 35, "matches": 308,"name": "Bundesliga"},
+                "15/16": {"id":10419,"rounds": 35, "matches": 308,"name": "Bundesliga"},
+                "14/15": {"id":8238, "rounds": 35, "matches": 308,"name": "Bundesliga"}
             }
         }
     },
@@ -91,17 +91,16 @@
         "ligue-1": {
             "league_id": 34,
             "seasons": {
-                "24/25": 61736,
-                "23/24": 52571,
-                "22/23": 42273,
-                "21/22": 37167,
-                "20/21": 28222,
-                "19/20": 23872,
-                "18/19": 17279,
-                "17/18": 13384,
-                "16/17": 11648,
-                "15/16": 10373,
-                "14/15": 8122
+                "24/25": {"id":61736,"rounds": 7, "matches": 63,"name": "Ligue 1"},
+                "23/24": {"id":52571,"rounds": 37, "matches": 310,"name": "Ligue 1"},
+                "22/23": {"id":42273,"rounds": 38, "matches": 380,"name": "Ligue 1"},
+                "21/22": {"id":37167,"rounds": 41, "matches": 384,"name": "Ligue 1"},
+                "20/21": {"id":28222,"rounds": 41, "matches": 384,"name": "Ligue 1"},
+                "19/20": {"id":23872,"rounds": 28, "matches": 280,"name": "Ligue 1"},
+                "18/19": {"id":17279,"rounds": 41, "matches": 384,"name": "Ligue 1"},
+                "17/18": {"id":13384,"rounds": 41, "matches": 384,"name": "Ligue 1"},
+                "16/17": {"id":11648,"rounds": 39, "matches": 382,"name": "Ligue 1"},
+                "15/16": {"id":10373,"rounds": 38, "matches": 380,"name": "Ligue 1"}
             }
         }
     },
@@ -109,17 +108,17 @@
         "liga-portugal-betclic": {
             "league_id": 238,
             "seasons": {
-                "24/25":	63670,
-                "23/24":	52769,
-                "22/23":	42655,
-                "21/22":	37358,
-                "20/21":	32456,
-                "19/20":	24150,
-                "18/19":	17714,
-                "17/18":	13539,
-                "16/17":	11924,
-                "15/16":	10453,
-                "14/15":	8382
+                "24/25":	{"id":63670,"rounds": 9, "matches": 81,"name": "Liga Portugal Betclic"},
+                "23/24":	{"id":52769,"rounds": 35, "matches": 308,"name": "Liga Portugal Betclic"},
+                "22/23":	{"id":42655,"rounds": 35, "matches": 308,"name": "Liga Portugal Betclic"},
+                "21/22":	{"id":37358,"rounds": 35, "matches": 308,"name": "Liga Portugal Betclic"},
+                "20/21":	{"id":32456,"rounds": 35, "matches": 308,"name": "Liga Portugal Betclic"},
+                "19/20":	{"id":24150,"rounds": 34, "matches": 306,"name": "Liga Portugal Betclic"},
+                "18/19":	{"id":17714,"rounds": 34, "matches": 306,"name": "Liga Portugal Betclic"},
+                "17/18":	{"id":13539,"rounds": 34, "matches": 306,"name": "Liga Portugal Betclic"},
+                "16/17":	{"id":11924,"rounds": 34, "matches": 306,"name": "Liga Portugal Betclic"},
+                "15/16":	{"id":10453,"rounds": 34, "matches": 306,"name": "Liga Portugal Betclic"},
+                "14/15":	{"id":8382, "rounds": 34, "matches": 306,"name": "Liga Portugal Betclic"}
             }
         }
     },
@@ -127,17 +126,11 @@
         "pro-league": {
             "league_id": 38,
             "seasons": {
-                "24/25":	61459,
-                "23/24":	52383,
-                "22/23":	42404,
-                "21/22":	36894,
-                "20/21":	28216,
-                "19/20":	24097,
-                "18/19":	17343,
-                "17/18":	13375,
-                "16/17":	11829,
-                "15/16":	10335,
-                "14/15":	8168
+                "24/25":	{"id":61459,"rounds": 11, "matches": 88,"name": "Pro League"},
+                "23/24":	{"id":52383,"rounds": 43, "matches": 323,"name": "Pro League"},
+                "22/23":	{"id":42404,"rounds": 34, "matches": 330,"name": "Pro League"},
+                "21/22":	{"id":36894,"rounds": 40, "matches": 332,"name": "Pro League"},
+                "20/21":	{"id":28216,"rounds": 35, "matches": 332,"name": "Pro League"}
             }
         }
     },
@@ -145,17 +138,12 @@
         "superliga": {
             "league_id": 39,
             "seasons": {
-                "24/25":	61326,
-                "23/24":	52172,
-                "22/23":	41914,
-                "21/22":	36834,
-                "20/21":	29247,
-                "19/20":	23743,
-                "18/19":	17268,
-                "17/18":	13378,
-                "16/17":	11695,
-                "15/16":	10389,
-                "14/15":	8144
+                "24/25":	{"id":61326,"rounds": 12, "matches": 72,"name": "Superliga"},
+                "23/24":	{"id":52172,"rounds": 33, "matches": 193,"name": "Superliga"},
+                "22/23":	{"id":41914,"rounds": 33, "matches": 193,"name": "Superliga"},
+                "21/22":	{"id":36834,"rounds": 33, "matches": 193,"name": "Superliga"},
+                "20/21":	{"id":29247,"rounds": 33, "matches": 193,"name": "Superliga"},
+                "19/20":	{"id":23743,"rounds": 38, "matches": 243,"name": "Superliga"}
             }
         }
     },
@@ -163,17 +151,16 @@
         "eredivisie": {
             "league_id": 37,
             "seasons": {
-                "24/25":	61666,
-                "23/24":	52554,
-                "22/23":	42256,
-                "21/22":	36890,
-                "20/21":	29186,
-                "19/20":	23873,
-                "18/19":	17353,
-                "17/18":	13399,
-                "16/17":	11777,
-                "15/16":	10370,
-                "14/15":	8170
+                "24/25":	{"id":61666,"rounds": 9, "matches": 81,"name": "Eredivisie"},
+                "23/24":	{"id":52554,"rounds": 39, "matches": 309,"name": "Eredivisie"},
+                "22/23":	{"id":42256,"rounds": 39, "matches": 312,"name": "Eredivisie"},
+                "21/22":	{"id":36890,"rounds": 39, "matches": 312,"name": "Eredivisie"},
+                "20/21":	{"id":29186,"rounds": 39, "matches": 309,"name": "Eredivisie"},
+                "19/20":	{"id":23873,"rounds": 34, "matches": 306,"name": "Eredivisie"},
+                "18/19":	{"id":17353,"rounds": 39, "matches": 312,"name": "Eredivisie"},
+                "17/18":	{"id":13399,"rounds": 39, "matches": 312,"name": "Eredivisie"},
+                "16/17":	{"id":11777,"rounds": 39, "matches": 312,"name": "Eredivisie"},
+                "15/16":	{"id":10370,"rounds": 39, "matches": 312,"name": "Eredivisie"}
             }
         }
     }
