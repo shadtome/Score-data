@@ -15,32 +15,58 @@ from datetime import datetime
 import random
 
 
-
-
+def load_match_data(json_path):
+    with open(json_path, 'r') as file:
+        data = json.load(file)
+    return data
 
 
 class sofascore:
-    def __init__(self,country,league,league_id,season_id,num_rounds):
+
+    # Path to the extracted uBlock Origin extension directory
+    # ublock_extension_path = '/home/rafael/Downloads/CJPALHDLNBPAFIAMEJDNHCPHJBKEIAGM_1_60_0_0'
+
+    def __init__(self,country,league,league_id,season_id,num_rounds,match_data):
         self.country = country
         self.league = league
         self.season_id = season_id
         self.league_id = league_id
         self.num_rounds = num_rounds
+        self.match_data=match_data
+        # self.driver = self.initialize_driver(self.ublock_extension_path)
         self.driver = self.initialize_driver()
         self.match_ids,round_clicks = self.scrape_matches()
+
+
+    def get_expected_match_count(self):
+        """Retrieve expected match count from JSON data."""
+        try:
+            return self.match_data[self.country][self.league]['seasons'][str(self.season_id)]['matches']
+        except KeyError:
+            print(f"Could not find match data for {self.country}, {self.league}, season ID {self.season_id}")
+            return 0
         
+    # def initialize_driver(self,ublock_extension_path):
+    #     chrome_options = ChromeOptions()
+    #     # Set the page load strategy to 'none'
+    #     chrome_options.page_load_strategy = 'none'
+        
+    #     #Include adblock
+    #     chrome_options.add_argument(f"--load-extension={ublock_extension_path}")
+
+    #     return webdriver.Chrome(options=chrome_options)
     def initialize_driver(self):
         chrome_options = ChromeOptions()
         # Set the page load strategy to 'none'
         chrome_options.page_load_strategy = 'none'
-        
+
         return webdriver.Chrome(options=chrome_options)
     
     def navigate_to_page(self,url):
         """Navigate to the given URL without waiting for the full page load."""
         
         self.driver.get(url)
-        time.sleep(2)  # Short initial wait to start loading the page
+        time.sleep(5)  # Short initial wait to start loading the page
 
     def scroll_to_matches(self):
         """Scroll down to the Matches section of the page."""
@@ -48,43 +74,66 @@ class sofascore:
             # Scroll to the estimated position to bring the Matches section into view
             scroll_position = 1700  # Adjusted value for the Matches section
             self.driver.execute_script(f"window.scrollTo(0, {scroll_position});")
+            time.sleep(2)  # Allow additional time after scrolling
             #print(f"Scrolled to position: {scroll_position}")
         except Exception as e:
             print(f"An error occurred while scrolling: {e}")
 
-    def collect_match_ids(self,match_ids, round_number):
+    def collect_match_ids(self,match_ids, round_number, retry_attempts=3):
         """Collect unique match IDs from the currently displayed Matches section."""
-        try:
-            
-            # Ensure the elements are fully loaded
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'a[href*="/football/match/"]'))
-            )
-            
-            # Second scroll to ensure all matches are visible
-            self.scroll_to_matches()
-            
-            time.sleep(1)  # Allow time for full rendering after scroll
+        collected = False
+        attempt = 0
+        expected_count = self.get_expected_match_count()
 
-            match_links = self.driver.find_elements(By.CSS_SELECTOR, 'a[href*="/football/match/"]')
+        while not collected and attempt < retry_attempts:
+            attempt += 1
+            current_ids = []
+
+            try:
             
-            #print(f"Round {round_number}: Match links located (count: {len(match_links)}).")
+                # Ensure the elements are fully loaded
+                WebDriverWait(self.driver, 15).until(
+                    EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'a[href*="/football/match/"]'))
+                )
+                
+                # Second scroll to ensure all matches are visible
+                self.scroll_to_matches()
+                
+                time.sleep(2)  # Allow time for full rendering after scroll
 
-            if len(match_links) < 10:
-                print(f"Warning: Less than 10 matches found for round {round_number}, possible loading issue.")
+                match_links = self.driver.find_elements(By.CSS_SELECTOR, 'a[href*="/football/match/"]')
                 
+                #print(f"Round {round_number}: Match links located (count: {len(match_links)}).")
 
-            for match in match_links:
-                
-                match_url = match.get_attribute('href')
-                
-                match_id = match_url.split('#id:')[-1]
-                
-                if match_id not in match_ids:
-                    match_ids.append(match_id)
-                    #print(f"Found match: {match_url} with Match ID: {match_id}")
-        except Exception as e:
-            print(f"Error occurred during match collection: {e}")
+                if len(match_links) < 10:
+                    print(f"Warning: Less than 10 matches found for round {round_number}, possible loading issue.")
+                    
+
+                for match in match_links:
+                    
+                    match_url = match.get_attribute('href')
+                    
+                    match_id = match_url.split('#id:')[-1]
+                    
+                    if match_id not in match_ids:
+                        current_ids.append(match_id)
+                        #print(f"Found match: {match_url} with Match ID: {match_id}")
+
+                if len(current_ids) >= expected_count or not expected_count:
+                    match_ids.extend([mid for mid in current_ids if mid not in match_ids])
+                    collected = True
+                else:
+                    print(f"Attempt {attempt}: Insufficient matches collected, retrying...")
+                    if attempt < retry_attempts:
+                        self.refresh_page()
+                        time.sleep(5)
+
+
+            except Exception as e:
+                print(f"Error occurred during match collection: {e}")
+        
+        if not collected:
+            print("Warning: Could not collect the expected number of match IDs.")
 
     def refresh_page(self, retries=3):
         """Refresh the page if match loading issues occur."""
@@ -100,18 +149,43 @@ class sofascore:
                 time.sleep(5)
         return False
     
+    # def find_and_click_left_arrow(self):
+    #     """Find and click the left arrow button to navigate to the previous round."""
+    #     try:
+            
+    #         left_arrow = WebDriverWait(self.driver, 10).until(
+    #             #EC.visibility_of_element_located((By.CSS_SELECTOR, "button.Button.iCnTrv[style*='visibility: visible;']"))
+    #             EC.element_to_be_clickable((By.CSS_SELECTOR, "button.Button.iCnTrv[style*='visibility: visible;']"))
+    #         )
+            
+    #         if left_arrow.is_displayed() and left_arrow.is_enabled():
+    #             self.driver.execute_script("arguments[0].click();", left_arrow)
+    #             #print("Clicked on the left arrow button.")
+    #             return True
+    #     except Exception as e:
+    #         print(f"Failed to click the left arrow button: {e}")
+    #     return False
+
     def find_and_click_left_arrow(self):
-        """Find and click the left arrow button to navigate to the previous round."""
+        """Find and click only the left arrow button based on its position relative to other buttons."""
         try:
-            
-            left_arrow = WebDriverWait(self.driver, 10).until(
-                #EC.visibility_of_element_located((By.CSS_SELECTOR, "button.Button.iCnTrv[style*='visibility: visible;']"))
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "button.Button.iCnTrv[style*='visibility: visible;']"))
+            # Collect all buttons with the shared selector
+            arrows = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, "button.Button.iCnTrv"))
             )
-            
-            if left_arrow.is_displayed() and left_arrow.is_enabled():
+
+            left_arrow = None
+            min_position = float('inf')
+
+            # Find the button to the left based on the position
+            for arrow in arrows:
+                position = arrow.location['x']
+                if position < min_position:
+                    min_position = position
+                    left_arrow = arrow
+
+            if left_arrow and left_arrow.is_displayed() and left_arrow.is_enabled():
                 self.driver.execute_script("arguments[0].click();", left_arrow)
-                #print("Clicked on the left arrow button.")
                 return True
         except Exception as e:
             print(f"Failed to click the left arrow button: {e}")
@@ -123,7 +197,7 @@ class sofascore:
         total_rounds = self.num_rounds  # Number of rounds in the league
         round_click_count = 0
 
-        # Navigate to the Premier League page for the desired season
+        # Navigate to a specific tournament page for the desired season
         self.navigate_to_page(f"https://www.sofascore.com/tournament/football/{self.country}/{self.league}/{self.league_id}#id:{self.season_id}")
         self.scroll_to_matches()
 
@@ -146,7 +220,7 @@ class sofascore:
 
                 # Collect match IDs for the current round
                 self.collect_match_ids(match_ids, round_click_count + 1)
-                
+
             except Exception as e:
                 print(f"An error occurred during scraping: {e}")
                 #refresh and retry if scraping fails
@@ -156,15 +230,16 @@ class sofascore:
         return match_ids, round_click_count
     
 class get_all_ids:
-    def __init__(self):
-        None
+    def __init__(self, match_data):
+        self.match_data=match_data
         
     def collect_match_ids(self):
-        match_ids = dict()
+        match_ids={}
+        # match_ids = dict()
         id_dict = self.league_season_ids_from_file()
 
-        #id_dict = {"england": {"premier-league": {"league_id": 17,"seasons": {"23/24": {"id":52186,"rounds":38,"matches":380, 'name': 'Premier League'}}}},
-                   #"spain" : {"laliga": {"league_id": 8, "seasons": {"23/24": {"id":52376,"rounds":38,"matches":380,"name":"LaLiga"}}}}}
+        # id_dict = {"england": {"premier-league": {"league_id": 17,"seasons": {"23/24": {"id":52186,"rounds":38,"matches":380, 'name': 'Premier League'}}}},
+        #            "spain" : {"laliga": {"league_id": 8, "seasons": {"23/24": {"id":52376,"rounds":38,"matches":380,"name":"LaLiga"}}}}}
         
         for country,country_v in tqdm(id_dict.items(),leave=False,desc='country',position=0):
             for league, league_v  in tqdm(country_v.items(),leave=False,desc='leagues',position=1):
@@ -172,7 +247,7 @@ class get_all_ids:
                             
                             
                             xm = season_v['matches']
-                            list_ids = sofascore(country,league,league_v['league_id'],season_v['id'],xm).match_ids
+                            list_ids = sofascore(country,league,league_v['league_id'],season_v['id'],xm,self.match_data).match_ids
                             
                             match_ids = match_ids | {country : 
                                                             {league: 
