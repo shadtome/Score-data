@@ -26,13 +26,13 @@ class sofascore:
     # Path to the extracted uBlock Origin extension directory
     # ublock_extension_path = '/home/rafael/Downloads/CJPALHDLNBPAFIAMEJDNHCPHJBKEIAGM_1_60_0_0'
 
-    def __init__(self,country,league,league_id,season_id,num_rounds,match_data):
+    def __init__(self,country,league,league_id,season_id,num_rounds,xtotal_matches):
         self.country = country
         self.league = league
         self.season_id = season_id
         self.league_id = league_id
         self.num_rounds = num_rounds
-        self.match_data=match_data
+        self.xtotal_matches=xtotal_matches
         # self.driver = self.initialize_driver(self.ublock_extension_path)
         self.driver = self.initialize_driver()
         self.match_ids,round_clicks = self.scrape_matches()
@@ -41,7 +41,7 @@ class sofascore:
     def get_expected_match_count(self):
         """Retrieve expected match count from JSON data."""
         try:
-            return self.match_data[self.country][self.league]['seasons'][str(self.season_id)]['matches']
+            return self.xtotal_matches
         except KeyError:
             print(f"Could not find match data for {self.country}, {self.league}, season ID {self.season_id}")
             return 0
@@ -120,10 +120,11 @@ class sofascore:
                         #print(f"Found match: {match_url} with Match ID: {match_id}")
 
                 if len(current_ids) >= expected_count or not expected_count:
+                    
                     match_ids.extend([mid for mid in current_ids if mid not in match_ids])
                     collected = True
                 else:
-                    print(f"Attempt {attempt}: Insufficient matches collected, retrying...")
+                    print(f"Attempt {attempt}: Insufficient matches collected: {len(current_ids)}<{expected_count}, retrying...")
                     if attempt < retry_attempts:
                         self.refresh_page()
                         time.sleep(5)
@@ -228,33 +229,34 @@ class sofascore:
                     break
         self.driver.close()
         return match_ids, round_click_count
-    
+
+
+ 
 class get_all_ids:
-    def __init__(self, match_data):
-        self.match_data=match_data
+    def __init__(self):
+        None
         
     def collect_match_ids(self):
-        match_ids={}
-        # match_ids = dict()
-        id_dict = self.league_season_ids_from_file()
+        
+        match_ids = dict()
+        #id_dict = self.league_season_ids_from_file()
 
-        # id_dict = {"england": {"premier-league": {"league_id": 17,"seasons": {"23/24": {"id":52186,"rounds":38,"matches":380, 'name': 'Premier League'}}}},
-        #            "spain" : {"laliga": {"league_id": 8, "seasons": {"23/24": {"id":52376,"rounds":38,"matches":380,"name":"LaLiga"}}}}}
+        id_dict = {"england": {"premier-league": {"league_id": 17,"seasons": {"23/24": {"id":52186,"rounds":38,"matches":380, 'name': 'Premier League'},
+                                                                               "22/23": 41886, "rounds": 38, "matches": 380, "name": "Premier-League"}}},
+                    "spain" : {"laliga": {"league_id": 8, "seasons": {"23/24": {"id":52376,"rounds":38,"matches":380,"name":"LaLiga"}}}}}
         
         for country,country_v in tqdm(id_dict.items(),leave=False,desc='country',position=0):
+            league_map = {}
             for league, league_v  in tqdm(country_v.items(),leave=False,desc='leagues',position=1):
+                seasons_map = {}
                 for season_year,season_v in tqdm(league_v['seasons'].items(),leave=False,desc='season_ids',position=2):
-                            
-                            
-                            xm = season_v['matches']
-                            list_ids = sofascore(country,league,league_v['league_id'],season_v['id'],xm,self.match_data).match_ids
-                            
-                            match_ids = match_ids | {country : 
-                                                            {league: 
-                                                                    {season_year: {
-                                                                                    "match_ids": list_ids,
-                                                                                    "matches": xm,
-                                                                                    "name": season_v['name']} }} }
+                    xr = season_v['rounds']
+                    xm = season_v['matches']
+                    list_ids = sofascore(country,league,league_v['league_id'],season_v['id'],xr,xm).match_ids
+                    list_ids = list(set(list_ids))
+                    seasons_map[season_year] = {"match_ids": list_ids,"matches": xm,"name": season_v['name']}
+                league_map[league] = seasons_map
+            match_ids[country] = league_map
         return match_ids
     
     def list_match_ids(self):
