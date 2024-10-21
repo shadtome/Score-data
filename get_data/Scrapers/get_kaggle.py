@@ -75,3 +75,21 @@ def get_understat_lineup_data():
 
     kaggle.api.dataset_download_files(dataset='codytipton/player-stats-per-game-understat',path=fd,unzip=True)
 
+
+
+def get_sofascore_data():
+    """This is our huge database from Sofascore"""
+
+    fd = os.getcwd()
+    fd = os.path.join(fd, 'data')
+    if os.path.exists(fd)==False:
+        os.mkdir(fd)
+
+    fd = os.path.join(fd, 'sofascore')
+    if os.path.exists(fd)==False:
+        os.mkdir(fd)
+    
+    kaggle.api.authenticate()
+
+    kaggle.api.dataset_download_files(dataset = 'rafaelmiksianmagaldi/sofascore-data',path = fd, unzip = True)
+
