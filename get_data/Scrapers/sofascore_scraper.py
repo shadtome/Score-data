@@ -24,7 +24,7 @@ def load_match_data(json_path):
 class sofascore:
 
     # Path to the extracted uBlock Origin extension directory
-    # ublock_extension_path = '/home/rafael/Downloads/CJPALHDLNBPAFIAMEJDNHCPHJBKEIAGM_1_60_0_0'
+    ublock_extension_path = '/home/rafael/Downloads/CJPALHDLNBPAFIAMEJDNHCPHJBKEIAGM_1_60_0_0'
 
     def __init__(self,country,league,league_id,season_id,num_rounds,xtotal_matches):
         self.country = country
@@ -33,8 +33,8 @@ class sofascore:
         self.league_id = league_id
         self.num_rounds = num_rounds
         self.xtotal_matches=xtotal_matches
-        # self.driver = self.initialize_driver(self.ublock_extension_path)
-        self.driver = self.initialize_driver()
+        self.driver = self.initialize_driver(self.ublock_extension_path)
+        # self.driver = self.initialize_driver()
         self.match_ids,round_clicks = self.scrape_matches()
 
 
@@ -46,21 +46,26 @@ class sofascore:
             print(f"Could not find match data for {self.country}, {self.league}, season ID {self.season_id}")
             return 0
         
-    # def initialize_driver(self,ublock_extension_path):
-    #     chrome_options = ChromeOptions()
-    #     # Set the page load strategy to 'none'
-    #     chrome_options.page_load_strategy = 'none'
-        
-    #     #Include adblock
-    #     chrome_options.add_argument(f"--load-extension={ublock_extension_path}")
-
-    #     return webdriver.Chrome(options=chrome_options)
-    def initialize_driver(self):
+    def initialize_driver(self,ublock_extension_path):
         chrome_options = ChromeOptions()
         # Set the page load strategy to 'none'
         chrome_options.page_load_strategy = 'none'
+        # chrome_options.add_argument("--headless")  # Optional: Run in headless mode
+        # chrome_options.add_argument("--disable-gpu")
+        # chrome_options.add_argument("--no-sandbox")
+        # chrome_options.add_argument("--disable-dev-shm-usage")
+        
+        #Include adblock
+        chrome_options.add_argument("--disable-javascript")
+        chrome_options.add_argument(f"--load-extension={ublock_extension_path}")
 
         return webdriver.Chrome(options=chrome_options)
+    # def initialize_driver(self):
+    #     chrome_options = ChromeOptions()
+    #     # Set the page load strategy to 'none'
+    #     chrome_options.page_load_strategy = 'none'
+
+    #     return webdriver.Chrome(options=chrome_options)
     
     def navigate_to_page(self,url):
         """Navigate to the given URL without waiting for the full page load."""
@@ -283,11 +288,11 @@ class get_all_ids:
     def collect_match_ids(self):
         
         match_ids = dict()
-        #id_dict = self.league_season_ids_from_file()
+        id_dict = self.league_season_ids_from_file()
 
-        id_dict = {"england": {"premier-league": {"league_id": 17,"seasons": {"23/24": {"id":52186,"rounds":38,"matches":380, 'name': 'Premier League'},
-                                                                                "22/23": {"id":41886, "rounds": 38, "matches": 380, "name": "Premier-League"}}}},
-                    "spain" : {"laliga": {"league_id": 8, "seasons": {"23/24": {"id":52376,"rounds":38,"matches":380,"name":"LaLiga"}}}}}
+        # id_dict = {"england": {"premier-league": {"league_id": 17,"seasons": {"23/24": {"id":52186,"rounds":38,"matches":380, 'name': 'Premier League'},
+        #                                                                         "22/23": {"id":41886, "rounds": 38, "matches": 380, "name": "Premier-League"}}}},
+        #             "spain" : {"laliga": {"league_id": 8, "seasons": {"23/24": {"id":52376,"rounds":38,"matches":380,"name":"LaLiga"}}}}}
         
         for country,country_v in tqdm(id_dict.items(),leave=False,desc='country',position=0):
             league_map = {}
@@ -431,66 +436,117 @@ class get_all_data:
         for id_x in tqdm(self.match_ids,leave=False,desc='main loop',position=0):
             time.sleep(random.randint(0,2))
             
-            
-            url_date = "https://www.sofascore.com/api/v1/event/"+id_x
-            parsed_url_date = urlparse(url_date)
-            conn_date = http.client.HTTPSConnection(parsed_url_date.netloc)
-            conn_date.request("GET",parsed_url_date.path)
-            res_date = conn_date.getresponse()
-            date_json = res_date.read()
-            json_data_date = json.loads(date_json.decode("utf-8"))
-            date = datetime.fromtimestamp(json_data_date['event']['startTimestamp'])
-            h_team = json_data_date['event']['homeTeam']['name']
-            a_team = json_data_date['event']['awayTeam']['name']
-            league = json_data_date['event']['tournament']['name']
-            season = json_data_date['event']['season']['year']
-            conn_date.close()
+            #Event information
+            try: 
+                url_date = "https://www.sofascore.com/api/v1/event/"+id_x
+                parsed_url_date = urlparse(url_date)
+                conn_date = http.client.HTTPSConnection(parsed_url_date.netloc)
+                conn_date.request("GET",parsed_url_date.path)
+                res_date = conn_date.getresponse()
+                if res_date.status == 200:
+                    date_json = res_date.read()
+                    if date_json:
+                        json_data_date = json.loads(date_json.decode("utf-8"))
+                        date = datetime.fromtimestamp(json_data_date['event']['startTimestamp'])
+                        h_team = json_data_date['event']['homeTeam']['name']
+                        a_team = json_data_date['event']['awayTeam']['name']
+                        league = json_data_date['event']['tournament']['name']
+                        season = json_data_date['event']['season']['year']
+                else:
+                    print(f"Failed to fetch data for match ID: {id_x}, Status: {res.status}")
+
+            except json.JSONDecodeError as e:
+                print(f"Event: JSON decode error for match ID: {id_x}: {e}")
+            except Exception as e:
+                print(f"Event: An error occurred for match ID: {id_x}: {e}")
+            finally:
+                conn_date.close()
 
 
             #player stats
-            url = "https://www.sofascore.com/api/v1/event/"+id_x+"/lineups"
-            parsed_url = urlparse(url)
-            conn = http.client.HTTPSConnection(parsed_url.netloc)
-            conn.request("GET",parsed_url.path)
-            res = conn.getresponse()
-            data_json = res.read()
-            jsondata = json.loads(data_json.decode("utf-8"))
+            try:
+                url = "https://www.sofascore.com/api/v1/event/"+id_x+"/lineups"
+                parsed_url = urlparse(url)
+                conn = http.client.HTTPSConnection(parsed_url.netloc)
+                conn.request("GET",parsed_url.path)
+                res = conn.getresponse()
+                #Check if the response is OK
+                if res.status == 200:
+                    data_json = res.read()
+                    # Check if the response is not empty
+                    if data_json:
+                        jsondata = json.loads(data_json.decode("utf-8"))
+                        #Process the data
+                        for x,y in jsondata.items():
+                            if x == 'home' or x == 'away':
+                                for player in y['players']:
+                                    num_players+=1
+                                    for tc in top_columns:
+                                        if tc not in player['player'].keys():
+                                            data[tc].append(None)
+                                        elif tc == 'dateOfBirthTimestamp':
+                                            data[tc].append(datetime.fromtimestamp(player['player'][tc]))
+                                        else:
+                                            data[tc].append(player['player'][tc])
+                                    if x == 'home':
+                                        data['team'].append(h_team)
+                                    if x == 'away':
+                                        data['team'].append(a_team)
+                                    data['date'].append(date)
+                                    data['league'].append(league)
+                                    data['season'].append(season)
+                                    if 'statistics' in player.keys():
+                                        for c in columns:
+                                            
+                                            if c not in player['statistics'].keys():
+                                                data[c].append(0)
+                                            else:
+                                                data[c].append(player['statistics'][c])
+                                    else:
+                                        for c in columns:
+                                            data[c].append(0)
+                else:
+                    print(f"Failed to fetch data for match ID: {id_x}, Status: {res.status}")
 
-            
+            except json.JSONDecodeError as e:
+                print(f"JSON decode error for match ID: {id_x}: {e}")
+            except Exception as e:
+                print(f"An error occurred for match ID: {id_x}: {e}")
+            finally:
+                conn.close()
 
-            
-            
-            for x,y in jsondata.items():
-                if x == 'home' or x == 'away':
-                    for player in y['players']:
-                        num_players+=1
-                        for tc in top_columns:
-                            if tc not in player['player'].keys():
-                                data[tc].append(None)
-                            elif tc == 'dateOfBirthTimestamp':
-                                data[tc].append(datetime.fromtimestamp(player['player'][tc]))
-                            else:
-                                data[tc].append(player['player'][tc])
-                        if x == 'home':
-                            data['team'].append(h_team)
-                        if x == 'away':
-                            data['team'].append(a_team)
-                        data['date'].append(date)
-                        data['league'].append(league)
-                        data['season'].append(season)
-                        if 'statistics' in player.keys():
-                            for c in columns:
+
+            # for x,y in jsondata.items():
+            #     if x == 'home' or x == 'away':
+            #         for player in y['players']:
+            #             num_players+=1
+            #             for tc in top_columns:
+            #                 if tc not in player['player'].keys():
+            #                     data[tc].append(None)
+            #                 elif tc == 'dateOfBirthTimestamp':
+            #                     data[tc].append(datetime.fromtimestamp(player['player'][tc]))
+            #                 else:
+            #                     data[tc].append(player['player'][tc])
+            #             if x == 'home':
+            #                 data['team'].append(h_team)
+            #             if x == 'away':
+            #                 data['team'].append(a_team)
+            #             data['date'].append(date)
+            #             data['league'].append(league)
+            #             data['season'].append(season)
+            #             if 'statistics' in player.keys():
+            #                 for c in columns:
                                 
-                                if c not in player['statistics'].keys():
-                                    data[c].append(0)
-                                else:
-                                    data[c].append(player['statistics'][c])
-                        else:
-                            for c in columns:
-                                data[c].append(0)
+            #                     if c not in player['statistics'].keys():
+            #                         data[c].append(0)
+            #                     else:
+            #                         data[c].append(player['statistics'][c])
+            #             else:
+            #                 for c in columns:
+            #                     data[c].append(0)
             
             
-            conn.close()
+            # conn.close()
         
         data_df = pd.DataFrame(data)
         data_df['dateOfBirthTimestamp'] = pd.to_datetime(data_df['dateOfBirthTimestamp'])
