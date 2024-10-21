@@ -410,13 +410,13 @@ class get_all_data:
     def get_data(self):
         top_columns = ['name','shortName','position','height','dateOfBirthTimestamp']
         game_stats_columns = ['team','date','league','season']
-        columns = ['minutesPlayed','rating'
-                   'accuratePass','totalLongBalls','accurateLongBalls','keyPass','totalPass','totalCross','accurateCross'
+        columns = ['minutesPlayed','rating',
+                   'accuratePass','totalLongBalls','accurateLongBalls','keyPass','totalPass','totalCross','accurateCross',
                    'goalAssist',
                    'savedShotsFromInsideTheBox','saves','totalKeeperSweeper','accurateKeeperSweeper', 
                    'goalsPrevented',
-                   'touches','possessionLostCtrl','dispossessed','expectedAssists'
-                   'aerialLost','aerialWon','duelLost','duelWon','challengeLost','outfielderBlock'
+                   'touches','possessionLostCtrl','dispossessed','expectedAssists',
+                   'aerialLost','aerialWon','duelLost','duelWon','challengeLost','outfielderBlock',
                    'totalContest','interceptionWon','totalContest','wonContest','totalTackle',
                    'totalClearance',
                    'blockedScoringAttempt','hitWoodwork','bigChanceCreated','bigChanceMissed',
