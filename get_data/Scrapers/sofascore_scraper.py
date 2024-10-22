@@ -404,6 +404,7 @@ class get_all_ids:
 class get_all_data:
     def __init__(self):
         self.match_ids = get_all_ids().list_match_ids()
+        #self.match_ids = ["12437058","12436545","11352670","11352403"]
         self.data = self.get_data()
         self.save_data()
 
@@ -417,7 +418,7 @@ class get_all_data:
                    'goalsPrevented',
                    'touches','possessionLostCtrl','dispossessed','expectedAssists',
                    'aerialLost','aerialWon','duelLost','duelWon','challengeLost','outfielderBlock',
-                   'totalContest','interceptionWon','totalContest','wonContest','totalTackle',
+                   'totalContest','interceptionWon','wonContest','totalTackle',
                    'totalClearance',
                    'blockedScoringAttempt','hitWoodwork','bigChanceCreated','bigChanceMissed',
                    'shotOffTarget','onTargetScoringAttempt','goals','expectedGoals',
@@ -547,7 +548,8 @@ class get_all_data:
             
             
             # conn.close()
-        
+        #for c in data.keys():
+            #print(c,len(data[c]))
         data_df = pd.DataFrame(data)
         data_df['dateOfBirthTimestamp'] = pd.to_datetime(data_df['dateOfBirthTimestamp'])
         return data_df
