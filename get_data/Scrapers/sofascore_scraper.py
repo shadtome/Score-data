@@ -13,7 +13,8 @@ import pandas as pd
 import os
 from datetime import datetime
 import random
-
+import concurrent.futures
+import math
 
 def load_match_data(json_path):
     with open(json_path, 'r') as file:
@@ -401,155 +402,240 @@ class get_all_ids:
 
         
 
+# class get_all_data:
+#     def __init__(self):
+#         # self.match_ids = get_all_ids().list_match_ids()
+#         self.match_ids = ["12437058","12436545","11352670","11352403"]
+#         self.data = self.get_data()
+#         self.save_data()
+
+#     def get_data(self):
+#         top_columns = ['name','shortName','position','height','dateOfBirthTimestamp']
+#         game_stats_columns = ['team','date','league','season']
+#         columns = ['minutesPlayed','rating',
+#                    'accuratePass','totalLongBalls','accurateLongBalls','keyPass','totalPass','totalCross','accurateCross',
+#                    'goalAssist',
+#                    'savedShotsFromInsideTheBox','saves','totalKeeperSweeper','accurateKeeperSweeper', 
+#                    'goalsPrevented',
+#                    'touches','possessionLostCtrl','dispossessed','expectedAssists',
+#                    'aerialLost','aerialWon','duelLost','duelWon','challengeLost','outfielderBlock',
+#                    'totalContest','interceptionWon','wonContest','totalTackle',
+#                    'totalClearance',
+#                    'blockedScoringAttempt','hitWoodwork','bigChanceCreated','bigChanceMissed',
+#                    'shotOffTarget','onTargetScoringAttempt','goals','expectedGoals',
+#                    'wasFouled','fouls','totalOffside',]
+
+#         data = dict()
+#         for tc in top_columns:
+#             data[tc]=[]
+
+#         for gc in game_stats_columns:
+#             data[gc]=[]
+
+#         for c in columns:
+#             data[c] = []
+#         num_players = 0
+#         for id_x in tqdm(self.match_ids,leave=False,desc='main loop',position=0):
+#             time.sleep(random.randint(0,2))
+            
+#             #Event information
+#             try: 
+#                 url_date = "https://www.sofascore.com/api/v1/event/"+id_x
+#                 parsed_url_date = urlparse(url_date)
+#                 conn_date = http.client.HTTPSConnection(parsed_url_date.netloc)
+#                 conn_date.request("GET",parsed_url_date.path)
+#                 res_date = conn_date.getresponse()
+#                 if res_date.status == 200:
+#                     date_json = res_date.read()
+#                     if date_json:
+#                         json_data_date = json.loads(date_json.decode("utf-8"))
+#                         date = datetime.fromtimestamp(json_data_date['event']['startTimestamp'])
+#                         h_team = json_data_date['event']['homeTeam']['name']
+#                         a_team = json_data_date['event']['awayTeam']['name']
+#                         league = json_data_date['event']['tournament']['name']
+#                         season = json_data_date['event']['season']['year']
+#                 else:
+#                     print(f"Failed to fetch data for match ID: {id_x}, Status: {res.status}")
+
+#             except json.JSONDecodeError as e:
+#                 print(f"Event: JSON decode error for match ID: {id_x}: {e}")
+#             except Exception as e:
+#                 print(f"Event: An error occurred for match ID: {id_x}: {e}")
+#             finally:
+#                 conn_date.close()
+
+
+#             #player stats
+#             try:
+#                 url = "https://www.sofascore.com/api/v1/event/"+id_x+"/lineups"
+#                 parsed_url = urlparse(url)
+#                 conn = http.client.HTTPSConnection(parsed_url.netloc)
+#                 conn.request("GET",parsed_url.path)
+#                 res = conn.getresponse()
+#                 #Check if the response is OK
+#                 if res.status == 200:
+#                     data_json = res.read()
+#                     # Check if the response is not empty
+#                     if data_json:
+#                         jsondata = json.loads(data_json.decode("utf-8"))
+#                         #Process the data
+#                         for x,y in jsondata.items():
+#                             if x == 'home' or x == 'away':
+#                                 for player in y['players']:
+#                                     num_players+=1
+#                                     for tc in top_columns:
+#                                         if tc not in player['player'].keys():
+#                                             data[tc].append(None)
+#                                         elif tc == 'dateOfBirthTimestamp':
+#                                             data[tc].append(datetime.fromtimestamp(player['player'][tc]))
+#                                         else:
+#                                             data[tc].append(player['player'][tc])
+#                                     if x == 'home':
+#                                         data['team'].append(h_team)
+#                                     if x == 'away':
+#                                         data['team'].append(a_team)
+#                                     data['date'].append(date)
+#                                     data['league'].append(league)
+#                                     data['season'].append(season)
+#                                     if 'statistics' in player.keys():
+#                                         for c in columns:
+                                            
+#                                             if c not in player['statistics'].keys():
+#                                                 data[c].append(0)
+#                                             else:
+#                                                 data[c].append(player['statistics'][c])
+#                                     else:
+#                                         for c in columns:
+#                                             data[c].append(0)
+#                 else:
+#                     print(f"Failed to fetch data for match ID: {id_x}, Status: {res.status}")
+
+#             except json.JSONDecodeError as e:
+#                 print(f"JSON decode error for match ID: {id_x}: {e}")
+#             except Exception as e:
+#                 print(f"An error occurred for match ID: {id_x}: {e}")
+#             finally:
+#                 conn.close()
+
+#         data_df = pd.DataFrame(data)
+#         data_df['dateOfBirthTimestamp'] = pd.to_datetime(data_df['dateOfBirthTimestamp'])
+#         return data_df
+
 class get_all_data:
     def __init__(self):
-        self.match_ids = get_all_ids().list_match_ids()
-        #self.match_ids = ["12437058","12436545","11352670","11352403"]
+        self.match_ids = get_all_ids().list_match_ids()  # Replace with your actual ID fetching logic
         self.data = self.get_data()
         self.save_data()
 
+    def fetch(self, id_x):
+        """Fetch event info and player stats for a given match ID."""
+        # Fetch event info
+        try:
+            url_event = f"https://www.sofascore.com/api/v1/event/{id_x}"
+            event_data = self.http_get(url_event)
+            if not event_data:
+                return None
+
+            # Extract event details
+            date = datetime.fromtimestamp(event_data['event']['startTimestamp'])
+            h_team = event_data['event']['homeTeam']['name']
+            a_team = event_data['event']['awayTeam']['name']
+            league = event_data['event']['tournament']['name']
+            season = event_data['event']['season']['year']
+
+            # Fetch player lineups
+            url_lineups = f"https://www.sofascore.com/api/v1/event/{id_x}/lineups"
+            lineups_data = self.http_get(url_lineups)
+            if not lineups_data:
+                return None
+
+            # Return combined data
+            return (date, h_team, a_team, league, season, lineups_data)
+        except Exception as e:
+            print(f"Error fetching match ID {id_x}: {e}")
+            return None
+
+    def http_get(self, url):
+        """Helper function to send HTTP GET requests."""
+        parsed_url = urlparse(url)
+        conn = http.client.HTTPSConnection(parsed_url.netloc)
+        conn.request("GET", parsed_url.path)
+        res = conn.getresponse()
+        if res.status == 200:
+            return json.loads(res.read().decode('utf-8'))
+        return None
+
+    def run_in_batches(self):
+        """Run the fetching process in batches with delays."""
+        BATCH_SIZE = 5  # Number of concurrent requests per batch
+        DELAY_BETWEEN_BATCHES = 2  # Delay (in seconds) between batches
+        results = []
+        total_batches = math.ceil(len(self.match_ids) / BATCH_SIZE)
+
+        for i in tqdm(range(total_batches), desc="Batches"):
+            # Get the current batch of match IDs
+            batch = self.match_ids[i * BATCH_SIZE:(i + 1) * BATCH_SIZE]
+
+            # Use ThreadPoolExecutor to fetch data in parallel within the batch
+            with concurrent.futures.ThreadPoolExecutor(max_workers=BATCH_SIZE) as executor:
+                batch_results = list(executor.map(self.fetch, batch))
+
+            # Collect results, filtering out None responses
+            results.extend([r for r in batch_results if r is not None])
+
+            # Delay between batches to avoid triggering rate limits
+            time.sleep(DELAY_BETWEEN_BATCHES)
+
+        return results
+
     def get_data(self):
-        top_columns = ['name','shortName','position','height','dateOfBirthTimestamp']
-        game_stats_columns = ['team','date','league','season']
-        columns = ['minutesPlayed','rating',
-                   'accuratePass','totalLongBalls','accurateLongBalls','keyPass','totalPass','totalCross','accurateCross',
-                   'goalAssist',
-                   'savedShotsFromInsideTheBox','saves','totalKeeperSweeper','accurateKeeperSweeper', 
-                   'goalsPrevented',
-                   'touches','possessionLostCtrl','dispossessed','expectedAssists',
-                   'aerialLost','aerialWon','duelLost','duelWon','challengeLost','outfielderBlock',
-                   'totalContest','interceptionWon','wonContest','totalTackle',
-                   'totalClearance',
-                   'blockedScoringAttempt','hitWoodwork','bigChanceCreated','bigChanceMissed',
-                   'shotOffTarget','onTargetScoringAttempt','goals','expectedGoals',
-                   'wasFouled','fouls','totalOffside',]
+        """Fetch data and process it into a DataFrame."""
+        results = self.run_in_batches()
 
-        data = dict()
-        for tc in top_columns:
-            data[tc]=[]
+        # Prepare data storage
+        top_columns = ['name', 'shortName', 'position', 'height', 'dateOfBirthTimestamp']
+        game_stats_columns = ['team', 'date', 'league', 'season']
+        columns = ['minutesPlayed', 'rating', 'accuratePass', 'totalLongBalls',
+                   'accurateLongBalls', 'keyPass', 'totalPass', 'totalCross',
+                   'accurateCross', 'goalAssist', 'savedShotsFromInsideTheBox',
+                   'saves', 'totalKeeperSweeper', 'accurateKeeperSweeper',
+                   'goalsPrevented', 'touches', 'possessionLostCtrl', 
+                   'dispossessed', 'expectedAssists', 'aerialLost', 'aerialWon',
+                   'duelLost', 'duelWon', 'challengeLost', 'outfielderBlock',
+                   'totalContest', 'interceptionWon', 'wonContest', 
+                   'totalTackle', 'totalClearance', 'blockedScoringAttempt',
+                   'hitWoodwork', 'bigChanceCreated', 'bigChanceMissed',
+                   'shotOffTarget', 'onTargetScoringAttempt', 'goals',
+                   'expectedGoals', 'wasFouled', 'fouls', 'totalOffside']
 
-        for gc in game_stats_columns:
-            data[gc]=[]
+        data = {col: [] for col in top_columns + game_stats_columns + columns}
 
-        for c in columns:
-            data[c] = []
-        num_players = 0
-        for id_x in tqdm(self.match_ids,leave=False,desc='main loop',position=0):
-            time.sleep(random.randint(0,2))
-            
-            #Event information
-            try: 
-                url_date = "https://www.sofascore.com/api/v1/event/"+id_x
-                parsed_url_date = urlparse(url_date)
-                conn_date = http.client.HTTPSConnection(parsed_url_date.netloc)
-                conn_date.request("GET",parsed_url_date.path)
-                res_date = conn_date.getresponse()
-                if res_date.status == 200:
-                    date_json = res_date.read()
-                    if date_json:
-                        json_data_date = json.loads(date_json.decode("utf-8"))
-                        date = datetime.fromtimestamp(json_data_date['event']['startTimestamp'])
-                        h_team = json_data_date['event']['homeTeam']['name']
-                        a_team = json_data_date['event']['awayTeam']['name']
-                        league = json_data_date['event']['tournament']['name']
-                        season = json_data_date['event']['season']['year']
-                else:
-                    print(f"Failed to fetch data for match ID: {id_x}, Status: {res.status}")
+        # Process results into the data dictionary
+        for result in results:
+            date, h_team, a_team, league, season, lineups_data = result
 
-            except json.JSONDecodeError as e:
-                print(f"Event: JSON decode error for match ID: {id_x}: {e}")
-            except Exception as e:
-                print(f"Event: An error occurred for match ID: {id_x}: {e}")
-            finally:
-                conn_date.close()
+            for side in ['home', 'away']:
+                if side in lineups_data:
+                    for player in lineups_data[side]['players']:
+                        # Add player info to data dictionary
+                        for col in top_columns:
+                            value = player['player'].get(col, None)
+                            if col == 'dateOfBirthTimestamp' and value:
+                                value = datetime.fromtimestamp(value)
+                            data[col].append(value)
 
+                        # Add game info
+                        data['team'].append(h_team if side == 'home' else a_team)
+                        data['date'].append(date)
+                        data['league'].append(league)
+                        data['season'].append(season)
 
-            #player stats
-            try:
-                url = "https://www.sofascore.com/api/v1/event/"+id_x+"/lineups"
-                parsed_url = urlparse(url)
-                conn = http.client.HTTPSConnection(parsed_url.netloc)
-                conn.request("GET",parsed_url.path)
-                res = conn.getresponse()
-                #Check if the response is OK
-                if res.status == 200:
-                    data_json = res.read()
-                    # Check if the response is not empty
-                    if data_json:
-                        jsondata = json.loads(data_json.decode("utf-8"))
-                        #Process the data
-                        for x,y in jsondata.items():
-                            if x == 'home' or x == 'away':
-                                for player in y['players']:
-                                    num_players+=1
-                                    for tc in top_columns:
-                                        if tc not in player['player'].keys():
-                                            data[tc].append(None)
-                                        elif tc == 'dateOfBirthTimestamp':
-                                            data[tc].append(datetime.fromtimestamp(player['player'][tc]))
-                                        else:
-                                            data[tc].append(player['player'][tc])
-                                    if x == 'home':
-                                        data['team'].append(h_team)
-                                    if x == 'away':
-                                        data['team'].append(a_team)
-                                    data['date'].append(date)
-                                    data['league'].append(league)
-                                    data['season'].append(season)
-                                    if 'statistics' in player.keys():
-                                        for c in columns:
-                                            
-                                            if c not in player['statistics'].keys():
-                                                data[c].append(0)
-                                            else:
-                                                data[c].append(player['statistics'][c])
-                                    else:
-                                        for c in columns:
-                                            data[c].append(0)
-                else:
-                    print(f"Failed to fetch data for match ID: {id_x}, Status: {res.status}")
+                        # Add player statistics
+                        stats = player.get('statistics', {})
+                        for col in columns:
+                            data[col].append(stats.get(col, 0))
 
-            except json.JSONDecodeError as e:
-                print(f"JSON decode error for match ID: {id_x}: {e}")
-            except Exception as e:
-                print(f"An error occurred for match ID: {id_x}: {e}")
-            finally:
-                conn.close()
-
-
-            # for x,y in jsondata.items():
-            #     if x == 'home' or x == 'away':
-            #         for player in y['players']:
-            #             num_players+=1
-            #             for tc in top_columns:
-            #                 if tc not in player['player'].keys():
-            #                     data[tc].append(None)
-            #                 elif tc == 'dateOfBirthTimestamp':
-            #                     data[tc].append(datetime.fromtimestamp(player['player'][tc]))
-            #                 else:
-            #                     data[tc].append(player['player'][tc])
-            #             if x == 'home':
-            #                 data['team'].append(h_team)
-            #             if x == 'away':
-            #                 data['team'].append(a_team)
-            #             data['date'].append(date)
-            #             data['league'].append(league)
-            #             data['season'].append(season)
-            #             if 'statistics' in player.keys():
-            #                 for c in columns:
-                                
-            #                     if c not in player['statistics'].keys():
-            #                         data[c].append(0)
-            #                     else:
-            #                         data[c].append(player['statistics'][c])
-            #             else:
-            #                 for c in columns:
-            #                     data[c].append(0)
-            
-            
-            # conn.close()
-        #for c in data.keys():
-            #print(c,len(data[c]))
+        # Convert the collected data into a DataFrame
         data_df = pd.DataFrame(data)
         data_df['dateOfBirthTimestamp'] = pd.to_datetime(data_df['dateOfBirthTimestamp'])
         return data_df
