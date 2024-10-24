@@ -9,7 +9,7 @@ class merge:
         self.transfer_df = self.get_transfer()
         self.combined = self.combine()
         self.save_file()
-        print('DONE!')
+        print('Done Merging Transfermarkt and Sofascore')
 
     def get_sofascore(self):
         fd = os.getcwd()

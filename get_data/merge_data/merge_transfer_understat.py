@@ -3,13 +3,13 @@ import os
 from tqdm.auto import tqdm
 import sqlite3 as sql
 
-class merge_data:
+class merge:
     def __init__(self):
         self.lineup_df = self.get_understat()
         self.transfer_df = self.get_transfer()
         self.combined = self.combine()
         self.save_file()
-        print('DONE!')
+        print('Done merging Transfermarkt and Understat')
 
     def get_understat(self):
         con = sql.connect('data/understat/understat_game_data/understat_lineup_game_stats.db')
