@@ -33,8 +33,14 @@ class merge_sofa_under:
     
     def combine(self):
         merged_df = pd.merge(self.sofascore_df,self.understat_df,on=['name','date'],how='left',suffixes=('_pg','_us'))
+        merged_df['xG'] = merged_df['xG'].fillna(0)
+        merged_df['xA'] = merged_df['xA'].fillna(0)
+        merged_df['yellow_card'] = merged_df['yellow_card'].fillna(0)
+        merged_df['red_card'] = merged_df['red_card'].fillna(0)
+        merged_df['xGChain'] = merged_df['xGChain'].fillna(0)
+        merged_df['xGBuildup'] = merged_df['xGBuildup'].fillna(0)
         merged_df['expectedGoals'] = np.where(merged_df['expectedGoals']==0,merged_df['xG'],merged_df['expectedGoals'])
-        merged_df['expectedAssists'] = np.where(merged_df['expectedGoals'] == 0, merged_df['xA'],merged_df['expectedAssists'])
+        merged_df['expectedAssists'] = np.where(merged_df['expectedAssists'] == 0, merged_df['xA'],merged_df['expectedAssists'])
         merged_df = merged_df.drop(columns = ['xG','xA'])
         return merged_df
     
