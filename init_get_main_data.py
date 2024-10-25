@@ -15,6 +15,7 @@ print('Done with kaggle data\n Start Merges')
 mts.merge()
 mus.merge()
 msu.merge_sofa_under()
+print('Done with merging of the data')
 
 sql_file = 'data/main_data/main_data.db'
 con = sqlite3.connect(sql_file)
