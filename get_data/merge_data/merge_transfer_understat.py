@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from tqdm.auto import tqdm
 import sqlite3 as sql
+import unicodedata
 
 class merge:
     def __init__(self):
@@ -41,6 +42,13 @@ class merge:
                     """,con)
         con.close()
         lineup['date'] = pd.to_datetime(lineup['date'])
+        lineup['name'] = lineup['name'].str.lower()
+        lineup['first_name'] = lineup['first_name'].str.lower()
+        lineup['last_name'] = lineup['last_name'].str.lower()
+        lineup['name'] = lineup['name'].apply(self.normalize_name)
+        lineup['first_name'] = lineup['first_name'].apply(self.normalize_name)
+        lineup['last_name'] = lineup['last_name'].apply(self.normalize_name)
+
         lineup = lineup.dropna(subset=['date'])
         lineup = lineup.sort_values(by='date')
         return lineup
@@ -134,6 +142,12 @@ class merge:
                             """,con)
         con.close()
         transfer['date'] = pd.to_datetime(transfer['date'])
+        transfer['name'] = transfer['name'].str.lower()
+        transfer['first_name'] = transfer['first_name'].str.lower()
+        transfer['last_name'] = transfer['last_name'].str.lower()
+        transfer['name'] = transfer['name'].apply(self.normalize_name)
+        transfer['first_name'] = transfer['first_name'].apply(self.normalize_name)
+        transfer['last_name'] = transfer['last_name'].apply(self.normalize_name)
         transfer = transfer.dropna(subset=['date'])
         transfer = transfer.sort_values(by='date')
         return transfer
@@ -148,8 +162,8 @@ class merge:
                     )
         
         combined = combined.dropna()
-        combined = combined.drop(columns=['name_y'])
-        combined = combined.rename(columns={'name_x':'name'})
+        combined = combined.drop(columns=['name_x'])
+        combined = combined.rename(columns={'name_y':'name'})
         return combined
     
     def save_file(self):
@@ -159,4 +173,9 @@ class merge:
             os.mkdir(save_path)
         save_path = os.path.join(save_path,'main_data_understat.csv')
         self.combined.to_csv(save_path,index=False)
+
+    def normalize_name(self,name):
+        normalized_name = unicodedata.normalize('NFKD',name)
+        normalized_name = normalized_name.replace('ø','o').replace('Ø','O')
+        return normalized_name
 

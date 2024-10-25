@@ -4,7 +4,7 @@ import get_data.merge_data.merge_transfer_understat as mus
 import get_data.merge_data.merge_sofa_under as msu
 import sqlite3
 import pandas as pd
-import os
+import get_data.train_test_splitter as tts
 
 # get all kaggle data
 print('Start kaggle data download')
@@ -28,3 +28,6 @@ df.to_sql(table_name,con,if_exists='replace',index=False)
 
 con.commit()
 con.close()
+
+print('Create train test splits')
+tts.train_test(train_size=0.8,seed=42)
