@@ -21,7 +21,7 @@ columns = ['name', 'shortName', 'position_acronym', 'height', 'date_of_birth_ss'
        'market_value_in_eur', 'yellow_card', 'red_card', 'xGChain',
        'xGBuildup']
 
-columns_general = ['name', 'position_acronym', 'height', 'date_of_birth_ss',
+columns_general = ['name','shortName', 'position_acronym', 'height', 'date_of_birth_ss',
        'team', 'date', 'league', 'season','foot']
 
 
@@ -52,7 +52,15 @@ class train_test:
         data = pd.read_csv(fd)
         data['date'] = pd.to_datetime(data['date']).dt.date
         data['date_of_birth_ss'] = pd.to_datetime(data['date_of_birth_ss']).dt.date
-        data = data.rename(columns={'date_of_birth_ss': 'dob'})
+
+        # first lets get rid of bad rows
+        condition = False
+        for gs in columns_count:
+            condition = condition | (data[gs]!=0)
+        for gs in columns_mean:
+            condition = condition | (data[gs]!=0)
+
+        data = data[condition]
 
         #get our aggregation info
         agg_info = {}
@@ -69,7 +77,11 @@ class train_test:
         for c in columns_mean:
             agg_info[c] = 'mean'
 
-        agg_data = data.groupby(by=['name','dob'],as_index=False).agg(agg_info)
+        agg_data = data.groupby(by=['name','date_of_birth_ss'],as_index=False).agg(agg_info)
+
+        agg_data = agg_data.rename(columns={'date_of_birth_ss': 'dob',
+                                             'position_acronym': 'pos', 'market_value_in_eur': 'market_value'})
+
         train,test = train_test_split(agg_data,train_size=train_size,random_state=seed)
         return train,test
     
