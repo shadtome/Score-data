@@ -2,6 +2,8 @@ import pandas as pd
 import os
 from tqdm.auto import tqdm
 import sqlite3 as sql
+import numpy as np
+import unicodedata
 
 class merge:
     def __init__(self):
@@ -9,7 +11,7 @@ class merge:
         self.transfer_df = self.get_transfer()
         self.combined = self.combine()
         self.save_file()
-        print('DONE!')
+        print('Done Merging Transfermarkt and Sofascore')
 
     def get_sofascore(self):
         fd = os.getcwd()
@@ -19,10 +21,15 @@ class merge:
         sofascore = sofascore.dropna(subset = ['date'])
         sofascore = sofascore.sort_values(by='date')
         sofascore['name'] = sofascore['name'].str.lower()
-        split_names = sofascore['name'].str.split(' ',expand=True)
-        sofascore['first_name'] = split_names[0]
-        sofascore['last_name'] = split_names[1]
+        split_names = sofascore['name'].str.strip().str.split(' ')
+        
+        sofascore['first_name'] = split_names.str[0]
+        sofascore['last_name'] = split_names.str[-1]
         sofascore = sofascore[sofascore['date']<=pd.to_datetime('today')]
+
+        sofascore['name'] = sofascore['name'].apply(self.normalize_name)
+        sofascore['first_name'] = sofascore['first_name'].apply(self.normalize_name)
+        sofascore['last_name'] = sofascore['last_name'].apply(self.normalize_name)
         
         
         return sofascore
@@ -115,6 +122,12 @@ class merge:
                             """,con)
         con.close()
         transfer['date'] = pd.to_datetime(transfer['date'])
+        transfer['name'] = transfer['name'].apply(self.normalize_name)
+        transfer['first_name'] = transfer['first_name'].apply(self.normalize_name)
+        transfer['last_name'] = transfer['last_name'].apply(self.normalize_name)
+        transfer['name'] = transfer['name'].str.lower()
+        transfer['first_name'] = transfer['first_name'].str.lower()
+        transfer['last_name'] = transfer['last_name'].str.lower()
         transfer = transfer.dropna(subset=['date'])
         transfer = transfer.sort_values(by='date')
         return transfer
@@ -130,8 +143,8 @@ class merge:
                     )
         
         combined = combined.dropna()
-        combined = combined.drop(columns=['name_y'])
-        combined = combined.rename(columns={'name_x':'name', 'dateOfBirthTimestamp':'date_of_birth_ss',
+        combined = combined.drop(columns=['name_x'])
+        combined = combined.rename(columns={'name_y':'name', 'dateOfBirthTimestamp':'date_of_birth_ss',
                                             'position_x': 'position_acronym', 'position_y': 'position_full'})
         combined = combined.drop_duplicates()
         return combined
@@ -143,3 +156,8 @@ class merge:
             os.mkdir(save_path)
         save_path = os.path.join(save_path,'main_data_sofascore.csv')
         self.combined.to_csv(save_path,index=False)
+
+    def normalize_name(self,name):
+        normalized_name = unicodedata.normalize('NFKD',name)
+        normalized_name = normalized_name.replace('ø','o').replace('Ø','O')
+        return normalized_name

@@ -1,6 +1,6 @@
 
 import get_data.get_all_data as gd
-from get_data.merge_data.merge_transfer_understat import merge_data as merge_understat
+from get_data.merge_data.merge_transfer_understat import merge as merge_understat
 from get_data.merge_data.merge_transfer_sofascore import merge as merge_sofascore
 
 
