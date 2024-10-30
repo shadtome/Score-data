@@ -11,7 +11,8 @@ class transformer:
         #sequence of operations on the data
         self.get_age()
         self.scale_market_value()
-        
+        self.drop_date_name()
+        self.indicator_functions()
 
     def get_age(self):
         self.data['date'] = pd.to_datetime(self.data['date'])
@@ -21,3 +22,9 @@ class transformer:
 
     def scale_market_value(self):
         self.data['market_value'] = np.log1p(self.data['market_value'])
+
+    def drop_date_name(self):
+        self.data = self.data.drop(['name','dob','date'],axis=1)
+
+    def indicator_functions(self):
+        self.data = pd.get_dummies(self.data,columns=['pos','foot'])
