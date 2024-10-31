@@ -82,7 +82,7 @@ class train_test:
         agg_data = agg_data.rename(columns={'date_of_birth_ss': 'dob',
                                              'position_acronym': 'pos', 'market_value_in_eur': 'market_value'})
 
-        train,test = train_test_split(agg_data,train_size=train_size,random_state=seed)
+        train,test = train_test_split(agg_data,train_size=train_size,random_state=seed,stratify=agg_data['pos'])
         return train,test
     
     def save(self):
