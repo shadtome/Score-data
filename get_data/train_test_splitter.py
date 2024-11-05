@@ -25,6 +25,7 @@ columns_general = ['name','shortName', 'position_acronym', 'height', 'date_of_bi
        'team', 'date', 'league', 'season','foot']
 
 
+
 columns_count = ['minutesPlayed','totalLongBalls','keyPass',
        'totalPass', 'totalCross','goalAssist',
        'savedShotsFromInsideTheBox', 'saves', 'totalKeeperSweeper',
@@ -39,6 +40,8 @@ columns_count = ['minutesPlayed','totalLongBalls','keyPass',
 columns_mean = ['rating','accuratePass','accurateLongBalls','accurateCross',
                 'accurateKeeperSweeper','expectedAssists','expectedGoals',
                 'xGChain','xGBuildup']
+
+
 
 class train_test:
     def __init__(self,train_size,seed):
@@ -70,6 +73,9 @@ class train_test:
         agg_info['foot'] = 'last'
         agg_info['date'] = 'last'
         agg_info['market_value_in_eur'] = 'last'
+        agg_info['adjusted_market_value_in_eur'] = 'last'
+        agg_info['team'] = 'last'
+        agg_info['league'] = 'last'
 
         for c in columns_count:
             agg_info[c] = 'sum'
@@ -80,7 +86,8 @@ class train_test:
         agg_data = data.groupby(by=['name','date_of_birth_ss'],as_index=False).agg(agg_info)
 
         agg_data = agg_data.rename(columns={'date_of_birth_ss': 'dob',
-                                             'position_acronym': 'pos', 'market_value_in_eur': 'market_value'})
+                                             'position_acronym': 'pos', 'market_value_in_eur': 'market_value',
+                                             'adjusted_market_value_in_eur': 'adjusted_market_value'})
 
         train,test = train_test_split(agg_data,train_size=train_size,random_state=seed,stratify=agg_data['pos'])
         return train,test
