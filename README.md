@@ -55,6 +55,22 @@ There are two ideas we have to predict market values for players and how we will
 
 
 
+## Models
+
+### Baseline Models
+- Simple Linear Regression with all the features Has RMSE $\approx 7 million$
+- Simple Linear regression with a few quadratic and cubic features.  Has RMSE $\approx 7 million$ (but slightly better then simple linear regression)
+- Decision Tree with all the features.  Has RMSE $\approx 6 thousand EUR$ but it is overfitting. (Hence boosting will improve this)
+
+### New Models
+- Look at the significant features and use just those. (Do this for each position) (Also see if we can add awards/achievements)
+- XGBoost Regression, this will improve the decision tree above decreasing the variance of the model.
+- Ensamble of linear regression models based on position/league/team (include the quad and cubic features if it improves, have a heavy penatly to age).
+    - Weight the features that are more important for each position
+- Ensamble of XGBoost regression based on position
+- Introduce new dataset with aggregated results upto 6 months ago and then new columns for the past 6 months.
+    - Same thing, but do it for more then 6 months, like agg upto 12 months ago and new columns for the past 12 months.
+
 
 
 

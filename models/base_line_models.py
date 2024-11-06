@@ -146,6 +146,8 @@ class Poly_Linear_Regression(Simple_Linear_Regression):
         return data
     
 
+    
+
 
 class Decision_Tree_Reg:
     def __init__(self,data, max_depth = None):
