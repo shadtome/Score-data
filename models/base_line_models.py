@@ -1,9 +1,13 @@
 # This file holds the baseline models we have, to test our other models agianst.
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import KFold
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import KFold, RandomizedSearchCV
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error,root_mean_squared_error,r2_score,mean_absolute_error,mean_absolute_percentage_error
 
 class Simple_Linear_Regression:
@@ -28,6 +32,9 @@ class Simple_Linear_Regression:
         self.data = self.transform_data(self.data)
         self.model = self.fit()
 
+    def the_model(self):
+        return LinearRegression()
+
     def transform_data(self,data):
         data = self.get_age(data)
         data = self.drop_date_name(data)
@@ -50,7 +57,7 @@ class Simple_Linear_Regression:
 
     def fit(self):
 
-        reg = LinearRegression()
+        reg = self.the_model()
         reg.fit(self.data[self.features],self.data[self.target])
         return reg
     
@@ -59,8 +66,8 @@ class Simple_Linear_Regression:
         X_data = self.transform_data(X_data)
         return self.model.predict(X_data[self.features])
 
-    def perform_CV(self):
-        cv = KFold(n_splits=10,shuffle=True,random_state=42,)
+    def perform_CV(self,n_splits=10):
+        cv = KFold(n_splits=n_splits,shuffle=True,random_state=42,)
         X = self.data[self.features]
         y = self.data[self.target]
 
@@ -81,7 +88,7 @@ class Simple_Linear_Regression:
             X_train, X_val = X.iloc[train_index] , X.iloc[val_index]
             y_train, y_val = y.iloc[train_index] , y.iloc[val_index]
 
-            model = LinearRegression()
+            model = self.the_model()
 
             model.fit(X_train,y_train)
 
@@ -146,13 +153,44 @@ class Poly_Linear_Regression(Simple_Linear_Regression):
         return data
     
 
+class Position_Linear_Regression(Simple_Linear_Regression):
+    def __init__(self,data, pos):
+        self.pos = pos
+        super().__init__(data)
+
+    def transform_data(self, data):
+        data = super().transform_data(data)
+        data = self.get_pos(data)
+        return data
+    
+    def get_pos(self,data):
+        data = data[data[f'pos_{self.pos}'] == True]
+        return data
+    
+
+class PCA_Linear_Regression(Simple_Linear_Regression):
+    def __init__(self,data,n_components=None):
+        self.n_components = n_components
+        super().__init__(data)
+    def the_model(self):
+        pipeline = Pipeline([('scale',StandardScaler()),('pca',PCA(self.n_components)),('lreg',LinearRegression())])
+        return pipeline
+
+
     
 
 
-class Decision_Tree_Reg:
-    def __init__(self,data, max_depth = None):
+class Tree_Reg:
+    def __init__(self,data,parameters = {'n_estimators': 100,
+                                            'max_depth': None,
+                                            'max_features': None,
+                                            'min_samples_leaf': 1,
+                                            'min_samples_split': 2,
+                                            'bootstrap': True},
+                       type='DTR', model=None):
         # First we need to transform our data to conform with data
-        self.max_depth = max_depth
+        self.parameters = parameters
+        self.type = type
         self.data = data
         self.features = ['minutesPlayed', 'totalLongBalls', 'keyPass', 'totalPass',
                             'totalCross', 'goalAssist', 'savedShotsFromInsideTheBox', 'saves',
@@ -168,8 +206,14 @@ class Decision_Tree_Reg:
                             'pos_D', 'pos_F', 'pos_G', 'pos_M', 'foot_both', 'foot_left',
                             'foot_right']
         self.target = 'adjusted_market_value'
-        self.data = self.transform_data(self.data)
-        self.model = self.fit()
+        self.model = None
+        if model == None:
+            self.model = self.fit()
+        else:
+            self.model = model
+
+
+
 
     def transform_data(self,data):
         data = self.get_age(data)
@@ -192,20 +236,78 @@ class Decision_Tree_Reg:
         return data
 
     def fit(self):
-
-        reg = DecisionTreeRegressor(max_depth=self.max_depth)
-        reg.fit(self.data[self.features],self.data[self.target])
+        t_data = self.transform_data(self.data.copy())
+        X=t_data[self.features]
+        y=t_data[self.target]
+        reg=None
+        if self.type == 'DTR':
+            reg = DecisionTreeRegressor(max_depth=self.parameters['max_depth'],max_features=self.parameters['max_features'],
+                                        min_samples_split=self.parameters['min_samples_split'],
+                                        min_samples_leaf=self.parameters['min_samples_leaf'])
+        if self.type == 'RFR':
+            reg = RandomForestRegressor(max_depth=self.parameters['max_depth'],n_estimators=self.parameters['n_estimators'],
+                                        max_features=self.parameters['max_features'],
+                                        min_samples_split=self.parameters['min_samples_split'],
+                                          min_samples_leaf=self.parameters['min_samples_leaf'],
+                                        bootstrap=self.parameters['bootstrap'])
+        if self.type == 'GBR':
+            reg = GradientBoostingRegressor(max_depth=self.parameters['max_depth'],n_estimators=self.parameters['n_estimators'],
+                                            max_features=self.parameters['max_features'],
+                                            min_samples_split=self.parameters['min_samples_split'],
+                                            min_samples_leaf=self.parameters['min_samples_leaf'])
+        reg.fit(X,y)
         return reg
+        
     
     def predict(self,X):
         X_data = X.copy()
         X_data = self.transform_data(X_data)
         return self.model.predict(X_data[self.features])
+    
+    def evaluate(self,test_data):
 
-    def perform_CV(self):
-        cv = KFold(n_splits=10,shuffle=True,random_state=42,)
-        X = self.data[self.features]
-        y = self.data[self.target]
+        train_pred = self.predict(self.data)
+
+        test = test_data.copy()
+        pred = self.predict(test)
+
+        MSE_train = mean_squared_error(train_pred,self.data[self.target])
+        RMSE_train = root_mean_squared_error(train_pred, self.data[self.target])
+        R2_train = r2_score(train_pred, self.data[self.target])
+        MAE_train = mean_absolute_error(train_pred,self.data[self.target])
+        MAPE_train = mean_absolute_percentage_error(train_pred, self.data[self.target])
+
+        MSE_test = mean_squared_error(pred,test[self.target])
+        RMSE_test = root_mean_squared_error(pred, test[self.target])
+        R2_test = r2_score(pred, test[self.target])
+        MAE_test = mean_absolute_error(pred,test[self.target])
+        MAPE_test = mean_absolute_percentage_error(pred, test[self.target])
+
+        print(f'MSE for train: {MSE_train}') 
+        print(f'MSE for test:  {MSE_test}\n')
+
+        print(f'RMSE for train: {RMSE_train}') 
+        print(f'RMSE for test: {RMSE_test}\n')
+
+        print(f'R^2 for train: {R2_train}') 
+        print(f'R^2 for test: {R2_test}\n')
+
+        print(f'MAE for train: {MAE_train}') 
+        print(f'MAE for test: {MAE_test}\n')  
+
+        print(f'MAPE for train: {MAPE_train}') 
+        print(f'MAPE for test: {MAPE_test}\n')
+        
+
+        
+        
+
+
+    def perform_CV(self,n_splits=10):
+        cv = KFold(n_splits=n_splits,shuffle=True,random_state=42,)
+        t_data = self.transform_data(self.data.copy())
+        X = t_data[self.features]
+        y = t_data[self.target]
 
         train_mses = []
         train_rmses = []
@@ -224,7 +326,22 @@ class Decision_Tree_Reg:
             X_train, X_val = X.iloc[train_index] , X.iloc[val_index]
             y_train, y_val = y.iloc[train_index] , y.iloc[val_index]
 
-            model = DecisionTreeRegressor(max_depth=self.max_depth)
+            model=None
+            if self.type == 'DTR':
+                model = DecisionTreeRegressor(max_depth=self.parameters['max_depth'],max_features=self.parameters['max_features'],
+                                        min_samples_split=self.parameters['min_samples_split'],
+                                        min_samples_leaf=self.parameters['min_samples_leaf'])
+            if self.type == 'RFR':
+                model = RandomForestRegressor(max_depth=self.parameters['max_depth'],n_estimators=self.parameters['n_estimators'],
+                                            max_features=self.parameters['max_features'],
+                                            min_samples_split=self.parameters['min_samples_split'],
+                                            min_samples_leaf=self.parameters['min_samples_leaf'],
+                                            bootstrap=self.parameters['bootstrap'])
+            if self.type == 'GBR':
+                model = GradientBoostingRegressor(max_depth=self.parameters['max_depth'],n_estimators=self.parameters['n_estimators'],
+                                                max_features=self.parameters['max_features'],
+                                                min_samples_split=self.parameters['min_samples_split'],
+                                                min_samples_leaf=self.parameters['min_samples_leaf'])
 
             model.fit(X_train,y_train)
 
@@ -260,3 +377,38 @@ class Decision_Tree_Reg:
 
         print(f'MAPE for train: mean: {np.mean(train_mapes)} std: {np.std(train_mapes)}') 
         print(f'MAPE for test: mean: {np.mean(test_mapes)} std: {np.std(test_mapes)}\n')
+
+
+    def hyperparameter_Search(self):
+        t_data = self.transform_data(self.data.copy())
+        X = t_data[self.features]
+        y = t_data[self.target]
+        random_grid = {'n_estimators': [50,100,200, 400,800],
+                       'max_depth': [None,1,2,3,4,5,10,30,60,90],
+                       'max_features': [None,1,'log2','sqrt'],
+                       'min_samples_leaf': [1,2,4],
+                       'min_samples_split': [2,5,10],
+                       'bootstrap': [True,False]}
+        
+
+        if self.type == 'DTR':
+            random_grid.pop('n_estimators')
+            random_grid.pop('bootstrap')
+            reg = DecisionTreeRegressor()
+            reg_random = RandomizedSearchCV(estimator = reg, param_distributions = random_grid,
+                                            n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
+            reg_random.fit(X,y)
+            return Tree_Reg(self.data,reg_random.best_params_,type = self.type,model=reg_random.best_estimator_)
+        if self.type == 'RFR':
+            reg = RandomForestRegressor()
+            reg_random = RandomizedSearchCV(estimator = reg, param_distributions = random_grid,
+                                            n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
+            reg_random.fit(X,y)
+            return Tree_Reg(self.data,reg_random.best_params_,type = self.type,model=reg_random.best_estimator_)
+        if self.type == 'GBR':
+            random_grid.pop('bootstrap')
+            reg = GradientBoostingRegressor()
+            reg_random = RandomizedSearchCV(estimator = reg, param_distributions = random_grid,
+                                            n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
+            reg_random.fit(X,y)
+            return Tree_Reg(self.data,reg_random.best_params_,type = self.type,model=reg_random.best_estimator_)
