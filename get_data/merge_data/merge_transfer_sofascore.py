@@ -158,6 +158,6 @@ class merge:
         self.combined.to_csv(save_path,index=False)
 
     def normalize_name(self,name):
-        normalized_name = unicodedata.normalize('NFKD',name)
+        normalized_name = unicodedata.normalize('NFKD',name).encode('ASCII','ignore').decode('utf-8')
         normalized_name = normalized_name.replace('ø','o').replace('Ø','O')
         return normalized_name

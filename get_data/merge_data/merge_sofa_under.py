@@ -4,6 +4,9 @@ from tqdm.auto import tqdm
 import sqlite3 as sql
 import numpy as np
 
+CPI = {'year': [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],
+       'cpi': [98.24,98.83,100.49,102.12,103.64,105.44,106.72,112.67,123.9,130.88]}
+CPI_df = pd.DataFrame(CPI)
 
 class merge_sofa_under:
     """This is used to merge the data from transfermerkt x understat with transfermarket x sofascore
@@ -13,6 +16,7 @@ class merge_sofa_under:
         self.understat_df = self.get_under()
         self.sofascore_df = self.get_sofa()
         self.merged = self.combine()
+        self.change_MV_Inflation()
         self.save()
         print("Done with Merging Transfermarkt x sofascore and Transfermarkt x understat")
 
@@ -44,6 +48,13 @@ class merge_sofa_under:
         merged_df = merged_df.drop(columns = ['xG','xA'])
         return merged_df
     
+    def change_MV_Inflation(self):
+        self.merged['date'] = pd.to_datetime(self.merged['date'])
+        self.merged['year'] = self.merged['date'].dt.year
+        self.merged = pd.merge(self.merged,CPI_df,on='year')
+        base_cpi = CPI_df[CPI_df['year'] == 2024]['cpi'].values[0]
+        self.merged['adjusted_market_value_in_eur'] = (self.merged['market_value_in_eur'] * (base_cpi/self.merged['cpi'])).astype(int)
+        self.merged = self.merged.drop(labels = ['year','cpi'],axis=1)
 
     def save(self):
         save_path = os.getcwd()

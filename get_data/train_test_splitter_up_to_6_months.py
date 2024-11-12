@@ -64,6 +64,18 @@ class train_test:
             condition = condition | (data[gs]!=0)
 
         data = data[condition]
+        
+        agg_six_info = {'date': 'last'}
+        final_date = data.groupby(by=['name'],as_index=False).agg(agg_six_info)
+        final_date['date'] = pd.to_datetime(final_date['date'])
+        final_date = final_date.rename(columns={'date':'final_date'})
+        final_date['6_months'] = final_date['final_date'] - pd.Timedelta(days = 180)
+        
+        temp = data.merge(final_date, on='name',how='left')
+        temp_after = temp[temp['date']>=temp['6_months']]
+        temp_before = temp[temp['date']<temp['6_months']]
+
+
 
         #get our aggregation info
         agg_info = {}
@@ -83,14 +95,32 @@ class train_test:
         for c in columns_mean:
             agg_info[c] = 'mean'
 
-        agg_data = data.groupby(by=['name','date_of_birth_ss'],as_index=False).agg(agg_info)
+        # agg before the last 6 months
+        agg_data_before = temp_before.groupby(by=['name','date_of_birth_ss'],as_index=False).agg(agg_info)
 
-        agg_data = agg_data.rename(columns={'date_of_birth_ss': 'dob',
-                                             'position_acronym': 'pos', 'market_value_in_eur': 'market_value',
-                                             'adjusted_market_value_in_eur': 'adjusted_market_value'})
 
-        train,test = train_test_split(agg_data,train_size=train_size,random_state=seed,stratify=agg_data['pos'])
+        # Agg the past 6 months
+
+        agg_data_after = temp_after.groupby(by=['name','date_of_birth_ss'],as_index=False).agg(agg_info)
+
+        combine = agg_data_before.merge(agg_data_after,on = 'name',how='left')
+
+        combine = combine.rename(columns={'date_of_birth_ss_x': 'dob',
+                                          'height_x': 'height',
+                                          'foot_x': 'foot',
+                                          'date_x': 'date',
+                                          'team_x': 'team',
+                                          'league_x':'league',
+                                             'position_acronym_x': 'pos', 
+                                             'market_value_in_eur_x': 'market_value_before',
+                                             'adjusted_market_value_in_eur_x': 'adjusted_market_value_before',
+                                             'market_value_in_eur_y': 'target_market_value',
+                                             'adjusted_market_value_in_eur_y': 'target_adjusted_market_value'})
+        combine = combine.drop(labels=['date_of_birth_ss_y','height_y','date_y','team_y','league_y',
+                                       'position_acronym_y'],axis=1)
+        train,test = train_test_split(combine,train_size=train_size,random_state=seed,stratify=combine['pos'])
         return train,test
+    
     
     def save(self):
         fd = 'data/main_data'
@@ -102,13 +132,8 @@ class train_test:
         if os.path.exists(train_fd)==False:
             os.mkdir(train_fd)
 
-        test_fd = os.path.join(test_fd,'test.csv')
-        train_fd = os.path.join(train_fd,'train.csv')
+        test_fd = os.path.join(test_fd,'test_up_to_6_months.csv')
+        train_fd = os.path.join(train_fd,'train_up_to_6_months.csv')
 
         self.test.to_csv(test_fd,index=False)
         self.train.to_csv(train_fd,index=False)
-
-        
-    
-     
-

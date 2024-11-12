@@ -5,6 +5,8 @@ import get_data.merge_data.merge_sofa_under as msu
 import sqlite3
 import pandas as pd
 import get_data.train_test_splitter as tts
+import get_data.train_test_splitter_6_months as tts6
+import get_data.train_test_splitter_up_to_6_months as ttsba
 
 # get all kaggle data
 print('Start kaggle data download')
@@ -31,3 +33,5 @@ con.close()
 
 print('Create train test splits')
 tts.train_test(train_size=0.8,seed=42)
+tts6.train_test(train_size=0.8,seed=42)
+ttsba.train_test(train_size=0.8,seed=42)
