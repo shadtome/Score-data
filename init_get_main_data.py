@@ -5,9 +5,9 @@ import get_data.merge_data.merge_sofa_under as msu
 import sqlite3
 import pandas as pd
 import get_data.train_test_splitter as tts
-import get_data.train_test_splitter_6_months as tts6
-import get_data.train_test_splitter_up_to_6_months as ttsba
-
+import get_data.train_test_splitter_aggall_and_6_months as tts6
+import get_data.train_test_splitter_ba_6 as ttsba
+"""
 # get all kaggle data
 print('Start kaggle data download')
 gk.get_transfermarkt_data()
@@ -30,7 +30,7 @@ df.to_sql(table_name,con,if_exists='replace',index=False)
 
 con.commit()
 con.close()
-
+"""
 print('Create train test splits')
 tts.train_test(train_size=0.8,seed=42)
 tts6.train_test(train_size=0.8,seed=42)

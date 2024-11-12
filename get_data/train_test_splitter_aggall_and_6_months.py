@@ -127,8 +127,8 @@ class train_test:
         if os.path.exists(train_fd)==False:
             os.mkdir(train_fd)
 
-        test_fd = os.path.join(test_fd,'test_6_months.csv')
-        train_fd = os.path.join(train_fd,'train_6_months.csv')
+        test_fd = os.path.join(test_fd,'test_agg_all_6.csv')
+        train_fd = os.path.join(train_fd,'train_agg_all_6.csv')
 
         self.test.to_csv(test_fd,index=False)
         self.train.to_csv(train_fd,index=False)

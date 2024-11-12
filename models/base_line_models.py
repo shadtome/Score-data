@@ -29,7 +29,6 @@ class Simple_Linear_Regression:
                             'pos_D', 'pos_F', 'pos_G', 'pos_M', 'foot_both', 'foot_left',
                             'foot_right']
         self.target = 'adjusted_market_value'
-        self.data = self.transform_data(self.data)
         self.model = self.fit()
 
     def the_model(self):
@@ -37,7 +36,6 @@ class Simple_Linear_Regression:
 
     def transform_data(self,data):
         data = self.get_age(data)
-        data = self.drop_date_name(data)
         data = self.indicator_functions(data)
         return data
 
@@ -47,29 +45,75 @@ class Simple_Linear_Regression:
         data['age'] = np.floor((data['date'] - data['dob']).dt.days/365)
         return data
     
-    def drop_date_name(self,data):
-        data = data.drop(['name','dob','date'],axis=1)
-        return data
 
     def indicator_functions(self,data):
         data = pd.get_dummies(data,columns=['pos','foot'])
         return data
-
+    
+    def scale_target_back(self,x):
+        return x
+    
     def fit(self):
-
+        t_data = self.transform_data(self.data.copy())
+        
         reg = self.the_model()
-        reg.fit(self.data[self.features],self.data[self.target])
+        reg.fit(t_data[self.features],t_data[self.target])
         return reg
     
     def predict(self,X):
         X_data = X.copy()
         X_data = self.transform_data(X_data)
         return self.model.predict(X_data[self.features])
+    
+    def predict_player(self,X,player):
+        X_data = X.copy()
+        X_data = self.transform_data(X_data)
+        try:
+            X_data = X_data[X_data['name'] == player]
+            if X_data.empty:
+                raise ValueError(f'Player "{player}" not found in the dataframe')
+            return f'{float(self.scale_target_back(self.model.predict(X_data[self.features]))):f}'
+        except ValueError as e:
+            print(e)
+
+    def evaluate(self,test_data):
+        t_test = self.transform_data(test_data.copy())
+        t_train = self.transform_data(self.data.copy())
+        train_pred = self.model.predict(t_train[self.features])
+        test_pred = self.model.predict(t_test[self.features])
+
+        MSE_train = mean_squared_error(train_pred,t_train[self.target])
+        RMSE_train = root_mean_squared_error(train_pred, t_train[self.target])
+        R2_train = r2_score(t_train[self.target], train_pred)
+        MAE_train = mean_absolute_error(train_pred,t_train[self.target])
+        MAPE_train = mean_absolute_percentage_error(train_pred, t_train[self.target])
+
+        MSE_test = mean_squared_error(test_pred,t_test[self.target])
+        RMSE_test = root_mean_squared_error(test_pred, t_test[self.target])
+        R2_test = r2_score( t_test[self.target],test_pred)
+        MAE_test = mean_absolute_error(test_pred,t_test[self.target])
+        MAPE_test = mean_absolute_percentage_error(test_pred, t_test[self.target])
+
+        print(f'MSE for train: {MSE_train}') 
+        print(f'MSE for test:  {MSE_test}\n')
+
+        print(f'RMSE for train: {RMSE_train}') 
+        print(f'RMSE for test: {RMSE_test}\n')
+
+        print(f'R^2 for train: {R2_train}') 
+        print(f'R^2 for test: {R2_test}\n')
+
+        print(f'MAE for train: {MAE_train}') 
+        print(f'MAE for test: {MAE_test}\n')  
+
+        print(f'MAPE for train: {MAPE_train}') 
+        print(f'MAPE for test: {MAPE_test}\n')    
 
     def perform_CV(self,n_splits=10):
         cv = KFold(n_splits=n_splits,shuffle=True,random_state=42,)
-        X = self.data[self.features]
-        y = self.data[self.target]
+        t_data = self.transform_data(self.data.copy())
+        X = t_data[self.features]
+        y = t_data[self.target]
 
         train_mses = []
         train_rmses = []
@@ -126,6 +170,19 @@ class Simple_Linear_Regression:
         print(f'MAPE for test: mean: {np.mean(test_mapes)} std: {np.std(test_mapes)}\n')
 
 
+class log_scale_Linear_Regression(Simple_Linear_Regression):
+    def scale_mv(self,data):
+        data['market_value'] = np.log1p(data['market_value'])
+        data['adjusted_market_value'] = np.log1p(data['adjusted_market_value'])
+        return data
+    
+    def transform_data(self, data):
+        data = super().transform_data(data)
+        data = self.scale_mv(data)
+        return data
+    
+    def scale_target_back(self, x):
+        return np.expm1(x)
 
 class Poly_Linear_Regression(Simple_Linear_Regression):
     def __init__(self, data, quad_f,cubic_f):
@@ -133,6 +190,11 @@ class Poly_Linear_Regression(Simple_Linear_Regression):
         self.cubic_f = cubic_f
         super().__init__(data)
         
+    def update_features(self):
+        for f in self.quad_f:
+            self.features += [f+'2']
+        for f in self.cubic_f:
+            self.features += [f+'3']
 
     def transform_data(self, data):
         data = super().transform_data(data)
@@ -143,17 +205,49 @@ class Poly_Linear_Regression(Simple_Linear_Regression):
     def quad_features(self,data):
         for f in self.quad_f:
             data[f+'2'] = np.pow(data[f],2)
-            self.features += [f+'2']
+            
         return data
     
     def cubic_features(self,data):
         for f in self.quad_f:
             data[f+'3'] = np.pow(data[f],3)
-            self.features += [f+'3']
         return data
+    
+    def fit(self):
+        self.update_features()
+        return super().fit()
+    
+
+class log_scale_Poly_Linear_Regression(Poly_Linear_Regression):
+    def scale_mv(self,data):
+        data['market_value'] = np.log1p(data['market_value'])
+        data['adjusted_market_value'] = np.log1p(data['adjusted_market_value'])
+        return data
+    
+    def transform_data(self, data):
+        data = super().transform_data(data)
+        data = self.scale_mv(data)
+        return data
+    
+    def scale_target_back(self, x):
+        return np.expm1(x)
     
 
 class Position_Linear_Regression(Simple_Linear_Regression):
+    def __init__(self,data, pos):
+        self.pos = pos
+        super().__init__(data)
+
+    def transform_data(self, data):
+        data = super().transform_data(data)
+        data = self.get_pos(data)
+        return data
+    
+    def get_pos(self,data):
+        data = data[data[f'pos_{self.pos}'] == True]
+        return data
+    
+class log_scale_Pos_Linear_Regression(log_scale_Linear_Regression):
     def __init__(self,data, pos):
         self.pos = pos
         super().__init__(data)
