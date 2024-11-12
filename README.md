@@ -1,5 +1,5 @@
-# Predicting Market-values for players in Major European Football Leagues
-### SCORE
+# SCORE: Soccer Cost & Outcome Return Evaluator
+### Predicting Market-values for players in Major European Football Leagues
 
 ## Objective 
 Our objective is to use player historical data in their career to predict their current market value for each transfer window. So that clubs can make financially sound investments for players they want to buy.
@@ -10,22 +10,12 @@ Our stakeholders are European football clubs across various leagues, including b
 
 ## KPI's
 - Prediction Accuracy
-    - stuff
-- ROI from transfers
-    - stuff
-- Player Performance post-transfer
-    - stuff
-- Financial impact on club's budget
-    - stuff
-- Stakeholder satistfaction 
-- Determine player's ROI
-- Determine players Market values
-- Determine clubs financial risk in buying a player or not based on team success
+    - Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), Mean Absolute Percentage Error (MAPE) and R² of predicted market values
 
-## Possible Products Avenues
+## Possible Product Avenues
 
-- data-driven recommendations
-    - Generate recommendations for transfers based on the club's financial constriatins.
+- Data-driven recommendations
+    - Generate recommendations for transfers based on the club's financial constraints.
 
 ## Dataset
 Our data is sourced from the following websites:
@@ -38,26 +28,56 @@ Our data is sourced from the following websites:
     - This contains some general stats about each player and game in the English Premier League, La Liga, Bundesliga, Ligue 1, Serie A, and Russian Premier League.
 
 
-### Raw Data
-Our raw data has the following features:
-- name of player
-- 
+## Data Preparation and Feature Engineering
+Data Collection:
+    Gather comprehensive player statistics, including performance metrics, physical attributes, and historical market values.
 
+Approach 1: Aggregated Career Stats
+    Aggregate each player's statistics up to the current date or when the player stopped playing.
+    Use the most recent known market value as the target variable.
+    Split the dataset into training (80%) and testing (20%) sets based on players, ensuring diversity in player profiles and making sure there is a proportional amount of players for each position in the train and test sets.
 
-## Our train-test data
-    Lets say we are working for a top English Premier League club right now in the 2024/2025 season and the January transfer season is coming up and the manager is looking at a certain player that could be helpful for a certain position.  What would be a good market value for this player given their career performance so far? This is what we want to determine using our data.
+Approach 2: Time-Series Stock Model (Not pursued due to time constraints)
+    Treat each player as a stock, using player stats and market valuations over time.
+    Predict the next market valuation using historical data with a time interval of 6 months.
 
-There are two ideas we have to predict market values for players and how we will set up our train and test data.
-- We can aggregate each of the players stats all the way up to when either the player has stopped playing or the current date with their target variable being their most recent known market value.  Then we can create our train-test split with our collection of players, i.e., we have 80% of the players in our train dataset with their aggregated stats to train on.  We could build simple models based on this data with respect to their career stats
-- Another way is to treat each player as a stock, i.e., we have their player stats and valuations over time and we try to predict the next market valuation using the past data.  Our $\Delta t$ would be every 6 months, which is where the valuations are made. This has some complications in terms of having enough data to even make a good prediction.  
-- Lastly, one that combines both of the ideas above is to aggregate the stats every 6 months for each player, but put them in the columns, so it would be simlar to the first bullet point, but instead of aggregating the whole career, it is seperated out so one can see the progress of valuations of the player. This would create a lot of features in the data.
+Approach 3: Semi-Aggregated Time-Series
+    Initial idea was to aggregate player statistics every 6 months, creating features that reflect progression over time. We would construct a dataset with columns for each 6-month interval, capturing the evolution of player valuations.
+    However, given the timeframe of the project, we chose a simpler approach of using the aggregate data for the final 6 months (or maybe also 12 months) as features.
 
+## Model Testing and Evaluation
+Baseline Models Tested:
 
+    Simple Linear Regression:
+        Initial RMSE of approximately 7 million EUR.
+        Enhanced with quadratic and cubic features, slightly improving RMSE.
 
+    Decision Tree:
+        Achieved very low RMSE of approximately 6 thousand EUR, but it is overfitting.
+        Identified the need for boosting to improve model robustness.
 
+New Models/Approaches:
 
+    Feature Selection:
+        Identify significant features for each position.
+        Tailor models for specific positions to enhance prediction accuracy.
 
+    XGBoost Regression:
+        Implement to reduce variance and improve upon decision tree performance.
 
+    Ensemble Models:
+        Develop ensembles of linear regression models based on position, league, and team, incorporating quadratic and cubic features when needed.
+        Introduce penalties for age to account for market depreciation.
+
+    Ensemble of XGBoost:
+        Create position-based ensembles to leverage XGBoost's strengths in handling complex interactions.
+
+    Extended Time-Series Features:
+        Introduce datasets with aggregated results up to 6 months ago, adding new columns for the past 6 months.
+        Experiment with 12-month aggregation to capture longer-term trends.
+            
+## Conclusion
+This modeling approach aims to leverage both aggregated career statistics and temporal data to predict soccer player market values effectively. By testing various models and incorporating domain-specific insights, the goal is to provide accurate and actionable predictions for transfer market decisions.
 
 
 ## Conda Enviroment
