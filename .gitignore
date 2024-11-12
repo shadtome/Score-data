@@ -8,3 +8,4 @@ get_data/merge_data/__pycache__/
 get_data/merge_data/test.ipynb
 get_data/test.ipynb
 data_manipulation/__pycache__
+models/__pycache__
