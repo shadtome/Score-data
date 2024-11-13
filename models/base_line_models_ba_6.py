@@ -265,15 +265,15 @@ class PCA_Linear_Regression(Simple_Linear_Regression):
 
 
 class Tree_Reg:
-    def __init__(self,data,parameters = {'n_estimators': 100,
-                                            'max_depth': None,
-                                            'max_features': None,
-                                            'min_samples_leaf': 1,
-                                            'min_samples_split': 2,
-                                            'bootstrap': True},
-                       type='DTR', model=None):
+    def __init__(self,data,n_estimators= 100,max_depth= None,max_features= None,min_samples_leaf= 1,
+                                            min_samples_split=2,bootstrap=True, type='DTR', model=None):
         # First we need to transform our data to conform with data
-        self.parameters = parameters
+        self.parameters = {'n_estimators': n_estimators,
+                                            'max_depth': max_depth,
+                                            'max_features': max_features,
+                                            'min_samples_leaf': min_samples_leaf,
+                                            'min_samples_split': min_samples_split,
+                                            'bootstrap': bootstrap}
         self.type = type
         self.data = data
         self.features = [  'adjusted_market_value_before', 'minutesPlayed_x', 'totalLongBalls_x', 'keyPass_x',
@@ -311,7 +311,35 @@ class Tree_Reg:
         else:
             self.model = model
 
-
+    @classmethod
+    def alternative__init__(cls,data,parameters = {'n_estimators': 100,
+                                            'max_depth': None,
+                                            'max_features': None,
+                                            'min_samples_leaf': 1,
+                                            'min_samples_split': 2,
+                                            'bootstrap': True},type='DTR',model=None):
+        n_estimators = 100
+        max_depth = None
+        max_features = None
+        min_samples_leaf = 1
+        min_samples_split = 2
+        bootstrap = True
+        if 'n_estimators' in parameters.keys():
+            n_estimators = parameters['n_estimators']
+        if 'max_depth' in parameters.keys():
+            max_depth = parameters['max_depth']
+        if 'max_features' in parameters.keys():
+            max_features = parameters['max_features']
+        if 'min_samples_leaf' in parameters.keys():
+            min_samples_leaf = parameters['min_samples_leaf']
+        if 'min_samples_split' in parameters.keys():
+            min_samples_split = parameters['min_samples_split']
+        if 'bootstrap' in parameters.keys():
+            bootstrap = parameters['bootstrap']
+        return cls(data,n_estimators= n_estimators,max_depth= max_depth,
+                   max_features= max_features,min_samples_leaf= min_samples_leaf,
+                                            min_samples_split=min_samples_split,
+                                            bootstrap=bootstrap, type='DTR', model=None)
     def transform_data(self,data):
         data = self.get_age(data)
         data = self.indicator_functions(data)
@@ -424,7 +452,7 @@ class Tree_Reg:
         test_maes = []
         test_mapes = []
 
-        for train_index, val_index in cv.split(self.data):
+        for train_index, val_index in cv.split(t_data):
             X_train, X_val = X.iloc[train_index] , X.iloc[val_index]
             y_train, y_val = y.iloc[train_index] , y.iloc[val_index]
 
@@ -485,8 +513,8 @@ class Tree_Reg:
         t_data = self.transform_data(self.data.copy())
         X = t_data[self.features]
         y = t_data[self.target]
-        random_grid = {'n_estimators': [50,100,200, 400,800],
-                       'max_depth': [None,1,2,3,4,5,10,30,60,90],
+        random_grid = {'n_estimators': [50,100,200],
+                       'max_depth': [None,1,2,3,4,5],
                        'max_features': [None,1,'log2','sqrt'],
                        'min_samples_leaf': [1,2,4],
                        'min_samples_split': [2,5,10],
@@ -500,17 +528,17 @@ class Tree_Reg:
             reg_random = RandomizedSearchCV(estimator = reg, param_distributions = random_grid,
                                             n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
             reg_random.fit(X,y)
-            return Tree_Reg(self.data,reg_random.best_params_,type = self.type,model=reg_random.best_estimator_)
+            return Tree_Reg.alternative__init__(self.data,reg_random.best_params_,type = self.type,model=reg_random.best_estimator_)
         if self.type == 'RFR':
             reg = RandomForestRegressor()
             reg_random = RandomizedSearchCV(estimator = reg, param_distributions = random_grid,
                                             n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
             reg_random.fit(X,y)
-            return Tree_Reg(self.data,reg_random.best_params_,type = self.type,model=reg_random.best_estimator_)
+            return Tree_Reg.alternative__init__(self.data,reg_random.best_params_,type = self.type,model=reg_random.best_estimator_)
         if self.type == 'GBR':
             random_grid.pop('bootstrap')
             reg = GradientBoostingRegressor()
             reg_random = RandomizedSearchCV(estimator = reg, param_distributions = random_grid,
                                             n_iter = 100, cv = 3, verbose=2, random_state=42, n_jobs = -1)
             reg_random.fit(X,y)
-            return Tree_Reg(self.data,reg_random.best_params_,type = self.type,model=reg_random.best_estimator_)
+            return Tree_Reg.alternative__init__(self.data,reg_random.best_params_,type = self.type,model=reg_random.best_estimator_)
