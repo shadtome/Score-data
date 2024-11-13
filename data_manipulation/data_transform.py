@@ -3,21 +3,23 @@ import os
 import numpy as np
 
 class transformer:
-    def __init__(self,original_data,EDA=False):
+    def __init__(self,original_data,EDA=False,scale=True):
         """Grabs our original train/test data and transforms it inorder
             original_data: this is the original data in our train or test at the end of the project"""
 
         self.data = original_data.copy()
         if EDA==False:
 
-            #sequence of operations on the data
+            
             self.get_age()
-            #self.scale_market_value()
+            if scale==True:
+                self.scale_market_value()
             self.drop_date_name()
             self.indicator_functions()
         else:
             self.get_age()
-            self.scale_market_value()
+            if scale==True:
+                self.scale_market_value()
 
     def get_age(self):
         self.data['date'] = pd.to_datetime(self.data['date'])
