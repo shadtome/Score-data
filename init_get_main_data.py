@@ -7,6 +7,7 @@ import pandas as pd
 import get_data.train_test_splitter as tts
 import get_data.train_test_splitter_aggall_and_6_months as tts6
 import get_data.train_test_splitter_ba_6 as ttsba
+import get_data.train_test_splitter_ba_12 as ttsba12
 """
 # get all kaggle data
 print('Start kaggle data download')
@@ -35,3 +36,4 @@ print('Create train test splits')
 tts.train_test(train_size=0.8,seed=42)
 tts6.train_test(train_size=0.8,seed=42)
 ttsba.train_test(train_size=0.8,seed=42)
+ttsba12.train_test(train_size=0.8,seed=42)
