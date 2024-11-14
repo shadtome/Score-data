@@ -14,7 +14,7 @@ class Simple_Linear_Regression:
     def __init__(self,data):
         # First we need to transform our data to conform with data
         self.data = data
-        self.features = [  'adjusted_market_value_before', 'minutesPlayed_x', 'totalLongBalls_x', 'keyPass_x',
+        self.features = [   'minutesPlayed_x', 'totalLongBalls_x', 'keyPass_x',
        'totalPass_x', 'totalCross_x', 'goalAssist_x',
        'savedShotsFromInsideTheBox_x', 'saves_x', 'totalKeeperSweeper_x',
        'goalsPrevented_x', 'touches_x', 'possessionLostCtrl_x',
