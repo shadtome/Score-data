@@ -297,8 +297,8 @@ class ensamble_model:
         # Default is Linear regression
         self.model_setup = {'G': {'model': G_Pos, 'type': 'LR', 'parameters': {}},
                             'D':{'model': D_Pos, 'type': 'LR', 'parameters': {}},
-                            'M': {'model': M_Pos, 'type': 'RFR', 'parameters': {'max_depth': 4}},
-                            'F': {'model': F_Pos, 'type': 'RFR', 'parameters': {'max_depth':4}}}
+                            'M': {'model': M_Pos, 'type': 'LR', 'parameters': {}},
+                            'F': {'model': F_Pos, 'type': 'LR', 'parameters': {}}}
         
         self.target = 'adjusted_market_value'
 
