@@ -23,7 +23,7 @@ class general_Regression:
             - RIDGE: Ridge linear regression
             - KNN: k nearest neighbors
             - DT: Decision tree regressor
-            - RDR: Random forest regressor
+            - RFR: Random forest regressor
             - GBR: Gradient boosted regressor
         **kwargs: this can take any arguments for each of the models above, example for Lasso and Ridge,
                   it can take alpha=0.5, or for Random forest regressor, it can take max_depth=3, ect..."""
@@ -35,7 +35,7 @@ class general_Regression:
             self.max_depth = kwargs.get('max_depth',None)
         self.min_samples_leaf = kwargs.get('min_samples_leaf',1)
         self.min_samples_split = kwargs.get('min_samples_split',2)
-        if type == 'RDR':
+        if type == 'RFR':
             self.max_features = kwargs.get('max_features',1)
         else:
             self.max_features = kwargs.get('max_features',None)
