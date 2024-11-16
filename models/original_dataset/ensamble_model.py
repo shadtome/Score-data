@@ -5,7 +5,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import KFold, RandomizedSearchCV
-from sklearn.linear_model import LinearRegression,Lasso,Ridge
+from sklearn.linear_model import LinearRegression,Lasso,Ridge,ElasticNet
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
@@ -21,6 +21,7 @@ class general_Regression:
             - LR: Linear Regression
             - LASSO: Lasso linear regression
             - RIDGE: Ridge linear regression
+            - ELASTICR: Elastic linear regression
             - KNN: k nearest neighbors
             - DT: Decision tree regressor
             - RFR: Random forest regressor
@@ -72,10 +73,12 @@ class general_Regression:
         
         if self.type == 'LR':
             return LinearRegression()
+        if self.type == 'ELASTICR':
+            return Pipeline([('scaler',StandardScaler()),('elastic',ElasticNet(alpha=self.alpha,random_state=self.random_state))])
         if self.type == 'LASSO':
-            return Lasso(alpha=self.alpha,random_state=self.random_state)
+            return Pipeline([('scaler',StandardScaler()),('lasso',Lasso(alpha=self.alpha,random_state=self.random_state))])
         if self.type == 'RIDGE':
-            return Ridge(alpha=self.alpha)
+            return Pipeline([('scaler',StandardScaler()),('ridge',Ridge(alpha=self.alpha))])
         if self.type == 'KNN':
             return Pipeline([('scaler',StandardScaler()),('knn',KNeighborsRegressor(n_neighbors=self.n_neighbors))])
         if self.type == 'DT':
@@ -426,9 +429,10 @@ class hyperparameter_tuning:
         self.n_iter = n_iter
         self.cv = cv
         # Here we will put all the possible combinations of parameters we would like to look at
-        self.models = ['LR','LASSO','RIDGE','KNN','DT','RFR','GBR']
+        self.models = ['LR','LASSO','RIDGE','ELASTICR','KNN','DT','RFR','GBR']
         self.parameters = {'LR': {},
                            'LASSO': {'alpha' : [0.5,1,1.5]},
+                           'ELASTICR': {'alpha' : [0.5,1,1.5]},
                            'RIDGE': {'alpha' : [0.5,1,1.5]},
                            'KNN'  : {'n_neighbors': [2,4,6,8,10,20,30]},
                            'DT'   : {'max_depth' : [None,2,3,4,5,6,10],
@@ -495,7 +499,7 @@ class hyperparameter_tuning:
                 best_param['M'] = {'model' : model_M_type, 'param' : param_M}
                 best_param['F'] = {'model' : model_F_type, 'param' : param_F}
                 best_model = model
-
+            
         return best_model, best_param, best_score
                 
 
