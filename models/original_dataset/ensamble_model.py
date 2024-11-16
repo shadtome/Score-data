@@ -10,7 +10,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error,root_mean_squared_error,r2_score,mean_absolute_error,mean_absolute_percentage_error
-
+import random
 
 
 class general_Regression:
@@ -92,8 +92,7 @@ class general_Regression:
             return GradientBoostingRegressor(subsample = self.subsample,learning_rate = self.learning_rate,n_estimators=self.n_estimators,max_depth=self.max_depth,
                                          min_samples_split = self.min_samples_split,
                                          min_samples_leaf=self.min_samples_leaf,max_features=self.max_features,
-                                         random_state = self.random_state,max_leaf_nodes=self.max_leaf_nodes,
-                                         bootstrap=self.bootstrap)
+                                         random_state = self.random_state,max_leaf_nodes=self.max_leaf_nodes)
 
     def _transform_data(self,data):
         data = self._get_age(data)
@@ -307,6 +306,23 @@ class ensamble_model:
         self.M_model=None
         self.F_model=None
 
+    def G_parameters(self,type, **kwargs):
+        self.model_setup['G']['type'] = type
+        self.model_setup['G']['parameters'] = kwargs
+        
+
+    def D_parameters(self,type, **kwargs):
+        self.model_setup['D']['type'] = type
+        self.model_setup['D']['parameters'] = kwargs
+
+    def M_parameters(self,type, **kwargs):
+        self.model_setup['M']['type'] = type
+        self.model_setup['M']['parameters'] = kwargs
+
+    def F_parameters(self,type, **kwargs):
+        self.model_setup['F']['type'] = type
+        self.model_setup['F']['parameters'] = kwargs
+
     def fit(self, data):
         self.G_model = self.get_model(data,'G')
         self.D_model = self.get_model(data,'D')
@@ -399,4 +415,89 @@ class ensamble_model:
 
         print(f'MAPE for train: mean: {np.mean(train_mapes)} std: {np.std(train_mapes)}') 
         print(f'MAPE for test: mean: {np.mean(test_mapes)} std: {np.std(test_mapes)}\n')
+
+
+
+
+class hyperparameter_tuning:
+    def __init__(self,data,n_iter, cv):
+
+        self.data = data
+        self.n_iter = n_iter
+        self.cv = cv
+        # Here we will put all the possible combinations of parameters we would like to look at
+        self.models = ['LR','LASSO','RIDGE','KNN','DT','RFR','GBR']
+        self.parameters = {'LR': {},
+                           'LASSO': {'alpha' : [0.5,1,1.5]},
+                           'RIDGE': {'alpha' : [0.5,1,1.5]},
+                           'KNN'  : {'n_neighbors': [2,4,6,8,10,20,30]},
+                           'DT'   : {'max_depth' : [None,2,3,4,5,6,10],
+                                     'max_features' : [None,0.25,0.5,0.75,1,'sqrt'],
+                                     'min_samples_split': [2,5,10],
+                                     'min_samples_leaf' : [1,2,4,8]},
+                           'RFR'  : {'max_depth' : [None,2,3,4,5,6,10],
+                                     'n_estimators': [10,20,30,50,100,200],
+                                     'max_features' : [0.25,0.5,0.75,1,'sqrt'],
+                                     'min_samples_split': [2,5,10],
+                                     'min_samples_leaf' : [1,2,4,8],
+                                     'bootstrap' : [True,False]},
+                           'GBR'  : {'max_depth' : [None,2,3,4,5,6,10],
+                                     'n_estimators': [50,100,200],
+                                     'min_samples_split': [2,5,10],
+                                     'min_samples_leaf' : [1,2,4],
+                                     'bootstrap' : [True,False]}}
+
+        self.best_model, self.best_params, self.best_score = self.perform_tuning()
+
+    def perform_tuning(self):
+        best_score = np.inf
+        best_param = {'G': None, 'D' : None, 'M': None, 'F': None}
+        best_model = None
+        kf = KFold(n_splits=self.cv,shuffle=True,random_state=42)
+
+        for _ in range(self.n_iter):
+
+            model_G_type = random.choice(self.models)
+            model_D_type = random.choice(self.models)
+            model_M_type = random.choice(self.models)
+            model_F_type = random.choice(self.models)
+            
+
+            param_G = {key : random.choice(values) for key,values in self.parameters[model_G_type].items()}
+            param_D = {key : random.choice(values) for key,values in self.parameters[model_D_type].items()}
+            param_M = {key : random.choice(values) for key,values in self.parameters[model_M_type].items()}
+            param_F = {key : random.choice(values) for key,values in self.parameters[model_F_type].items()}
+
+            model = ensamble_model()
+            model.G_parameters(type = model_G_type,**param_G)
+            model.D_parameters(type = model_D_type,**param_D)
+            model.M_parameters(type = model_M_type,**param_M)
+            model.F_parameters(type = model_F_type,**param_F)
+
+            cv_scores = []
+
+            for train_index, val_index in kf.split(self.data):
+
+                data_train = self.data.iloc[train_index]
+                data_val = self.data.iloc[val_index]
+
+                model.fit(data_train)
+                y_pred = model.predict(data_val)
+                score = root_mean_squared_error(data_val[model.target],y_pred)
+                cv_scores.append(score)
+
+            mean_cv_score = np.mean(cv_scores)
+
+            if mean_cv_score<best_score:
+                best_score = mean_cv_score
+                best_param['G'] = {'model' : model_G_type, 'param' : param_G}
+                best_param['D'] = {'model' : model_D_type, 'param' : param_D}
+                best_param['M'] = {'model' : model_M_type, 'param' : param_M}
+                best_param['F'] = {'model' : model_F_type, 'param' : param_F}
+                best_model = model
+
+        return best_model, best_param, best_score
+                
+
+
 
