@@ -126,6 +126,8 @@ class general_Regression:
         return reg
     
     def predict(self,X):
+        """Takes in the dataframe of data, with the features and the target column in it and give
+        a prediction on that data."""
         X_data = X.copy()
         X_data = self._transform_data(X_data)
         return self.scale_target_back(self.model.predict(X_data[self.features]))
@@ -237,6 +239,19 @@ class general_Regression:
 
 class G_Pos(general_Regression):
     def __init__(self,data,type='LR',**kwargs):
+        """This is the model for the goal keepers inherited from general_Regression()
+        Takes in the data we have directly and it will transform it in the appropriate way
+        type: This input is for choosing which regression model to use,
+            - LR: Linear Regression
+            - LASSO: Lasso linear regression
+            - RIDGE: Ridge linear regression
+            - ELASTICR: Elastic linear regression
+            - KNN: k nearest neighbors
+            - DT: Decision tree regressor
+            - RFR: Random forest regressor
+            - GBR: Gradient boosted regressor
+        **kwargs: this can take any arguments for each of the models above, example for Lasso and Ridge,
+                  it can take alpha=0.5, or for Random forest regressor, it can take max_depth=3, ect..."""
         features = ['minutesPlayed', 'totalLongBalls','keyPass', 'totalPass','savedShotsFromInsideTheBox', 'saves',
                             'totalKeeperSweeper', 'goalsPrevented', 'touches','blockedScoringAttempt',
                             'yellow_card', 'red_card', 'rating', 'accuratePass',
@@ -245,7 +260,21 @@ class G_Pos(general_Regression):
         super().__init__(data,type=type,features=features,**kwargs)
 
 class D_Pos(general_Regression):
+    
     def __init__(self,data,type='LR',**kwargs):
+        """This is the model for the defenders inherited from general_Regression()
+        Takes in the data we have directly and it will transform it in the appropriate way
+        type: This input is for choosing which regression model to use,
+            - LR: Linear Regression
+            - LASSO: Lasso linear regression
+            - RIDGE: Ridge linear regression
+            - ELASTICR: Elastic linear regression
+            - KNN: k nearest neighbors
+            - DT: Decision tree regressor
+            - RFR: Random forest regressor
+            - GBR: Gradient boosted regressor
+        **kwargs: this can take any arguments for each of the models above, example for Lasso and Ridge,
+                  it can take alpha=0.5, or for Random forest regressor, it can take max_depth=3, ect..."""
         features = ['minutesPlayed', 'totalLongBalls','keyPass', 'totalPass',
                             'totalCross', 'goalAssist', 'goalsPrevented', 'touches', 'possessionLostCtrl',
                             'dispossessed', 'aerialLost', 'aerialWon', 'duelLost', 'duelWon',
@@ -260,7 +289,21 @@ class D_Pos(general_Regression):
         super().__init__(data,type=type,features=features,**kwargs)
     
 class M_Pos(general_Regression):
+
     def __init__(self,data,type='LR',**kwargs):
+        """This is the model for the midfielders inherited from general_Regression()
+        Takes in the data we have directly and it will transform it in the appropriate way
+        type: This input is for choosing which regression model to use,
+            - LR: Linear Regression
+            - LASSO: Lasso linear regression
+            - RIDGE: Ridge linear regression
+            - ELASTICR: Elastic linear regression
+            - KNN: k nearest neighbors
+            - DT: Decision tree regressor
+            - RFR: Random forest regressor
+            - GBR: Gradient boosted regressor
+        **kwargs: this can take any arguments for each of the models above, example for Lasso and Ridge,
+                  it can take alpha=0.5, or for Random forest regressor, it can take max_depth=3, ect..."""
         features = ['minutesPlayed', 'totalLongBalls','keyPass', 'totalPass',
                             'totalCross', 'goalAssist', 'savedShotsFromInsideTheBox',
                              'goalsPrevented', 'touches', 'possessionLostCtrl',
@@ -276,7 +319,21 @@ class M_Pos(general_Regression):
         super().__init__(data,type=type,features=features,**kwargs)
     
 class F_Pos(general_Regression):
+
     def __init__(self,data,type='LR',**kwargs):
+        """This is the model for the forwards inherited from general_Regression()
+        Takes in the data we have directly and it will transform it in the appropriate way
+        type: This input is for choosing which regression model to use,
+            - LR: Linear Regression
+            - LASSO: Lasso linear regression
+            - RIDGE: Ridge linear regression
+            - ELASTICR: Elastic linear regression
+            - KNN: k nearest neighbors
+            - DT: Decision tree regressor
+            - RFR: Random forest regressor
+            - GBR: Gradient boosted regressor
+        **kwargs: this can take any arguments for each of the models above, example for Lasso and Ridge,
+                  it can take alpha=0.5, or for Random forest regressor, it can take max_depth=3, ect..."""
         features = ['minutesPlayed', 'totalLongBalls','keyPass', 'totalPass',
                             'totalCross', 'goalAssist',
                              'goalsPrevented', 'touches', 'possessionLostCtrl',
@@ -294,9 +351,7 @@ class F_Pos(general_Regression):
     
 class ensamble_model:
     def __init__(self):
-        
-        # here put in our specifications for each model for each position to make these as best as possible.
-        # Default is Linear regression
+        """ This is the ensamble model for each of the positions."""
         self.model_setup = {'G': {'model': G_Pos, 'type': 'LR', 'parameters': {}},
                             'D':{'model': D_Pos, 'type': 'LR', 'parameters': {}},
                             'M': {'model': M_Pos, 'type': 'LR', 'parameters': {}},
@@ -310,23 +365,72 @@ class ensamble_model:
         self.F_model=None
 
     def G_parameters(self,type, **kwargs):
+        """The parameters for the model on goal keepers
+        type: This input is for choosing which regression model to use,
+            - LR: Linear Regression
+            - LASSO: Lasso linear regression
+            - RIDGE: Ridge linear regression
+            - ELASTICR: Elastic linear regression
+            - KNN: k nearest neighbors
+            - DT: Decision tree regressor
+            - RFR: Random forest regressor
+            - GBR: Gradient boosted regressor
+        **kwargs: this can take any arguments for each of the models above, example for Lasso and Ridge,
+                  it can take alpha=0.5, or for Random forest regressor, it can take max_depth=3, ect..."""
         self.model_setup['G']['type'] = type
         self.model_setup['G']['parameters'] = kwargs
         
 
     def D_parameters(self,type, **kwargs):
+        """The parameters for the model on defenders
+        type: This input is for choosing which regression model to use,
+            - LR: Linear Regression
+            - LASSO: Lasso linear regression
+            - RIDGE: Ridge linear regression
+            - ELASTICR: Elastic linear regression
+            - KNN: k nearest neighbors
+            - DT: Decision tree regressor
+            - RFR: Random forest regressor
+            - GBR: Gradient boosted regressor
+        **kwargs: this can take any arguments for each of the models above, example for Lasso and Ridge,
+                  it can take alpha=0.5, or for Random forest regressor, it can take max_depth=3, ect..."""
         self.model_setup['D']['type'] = type
         self.model_setup['D']['parameters'] = kwargs
 
     def M_parameters(self,type, **kwargs):
+        """The parameters for the model on midfielders
+        type: This input is for choosing which regression model to use,
+            - LR: Linear Regression
+            - LASSO: Lasso linear regression
+            - RIDGE: Ridge linear regression
+            - ELASTICR: Elastic linear regression
+            - KNN: k nearest neighbors
+            - DT: Decision tree regressor
+            - RFR: Random forest regressor
+            - GBR: Gradient boosted regressor
+        **kwargs: this can take any arguments for each of the models above, example for Lasso and Ridge,
+                  it can take alpha=0.5, or for Random forest regressor, it can take max_depth=3, ect..."""
         self.model_setup['M']['type'] = type
         self.model_setup['M']['parameters'] = kwargs
 
     def F_parameters(self,type, **kwargs):
+        """The parameters for the model on forwards
+        type: This input is for choosing which regression model to use,
+            - LR: Linear Regression
+            - LASSO: Lasso linear regression
+            - RIDGE: Ridge linear regression
+            - ELASTICR: Elastic linear regression
+            - KNN: k nearest neighbors
+            - DT: Decision tree regressor
+            - RFR: Random forest regressor
+            - GBR: Gradient boosted regressor
+        **kwargs: this can take any arguments for each of the models above, example for Lasso and Ridge,
+                  it can take alpha=0.5, or for Random forest regressor, it can take max_depth=3, ect..."""
         self.model_setup['F']['type'] = type
         self.model_setup['F']['parameters'] = kwargs
 
     def fit(self, data):
+        """Fits the input data to the model"""
         self.G_model = self.get_model(data,'G')
         self.D_model = self.get_model(data,'D')
         self.M_model = self.get_model(data,'M')
@@ -342,6 +446,7 @@ class ensamble_model:
         return model(X,type,**parameters)
     
     def predict(self,data):
+        """Predicts the target for input data"""
         X = data.copy()
         X_G = X.loc[X['pos'] == 'G']
         X_D = X.loc[X['pos'] == 'D']
@@ -361,6 +466,7 @@ class ensamble_model:
     
 
     def perform_CV(self,data,n_splits=10):
+        """Performs cross-valdiation with the input parameters"""
         cv = KFold(n_splits=n_splits,shuffle=True,random_state=42,)
         data_c = data.copy()
         train_mses = []
@@ -424,21 +530,23 @@ class ensamble_model:
 
 class hyperparameter_tuning:
     def __init__(self,data,n_iter, cv):
-
+        """Takes in thed data, number of iterations (n_iter) and number of cross validations (cv)
+        and randomly looks through the possible values for each of the parameters and performs cross-validation.
+        It finds the best parameters with the best score"""
         self.data = data
         self.n_iter = n_iter
         self.cv = cv
         # Here we will put all the possible combinations of parameters we would like to look at
         self.models = ['LR','LASSO','RIDGE','ELASTICR','KNN','DT','RFR','GBR']
         self.parameters = {'LR': {},
-                           'LASSO': {'alpha' : [0.5,1,1.5]},
-                           'ELASTICR': {'alpha' : [0.5,1,1.5]},
-                           'RIDGE': {'alpha' : [0.5,1,1.5]},
-                           'KNN'  : {'n_neighbors': [2,4,6,8,10,20,30]},
-                           'DT'   : {'max_depth' : [None,2,3,4,5,6,10],
+                           'LASSO': {'alpha' : np.linspace(0.5,10)},
+                           'ELASTICR': {'alpha' : np.linspace(0.5,10)},
+                           'RIDGE': {'alpha' : np.linspace(0.5,10)},
+                           'KNN'  : {'n_neighbors': [2,4,6,8,10,20,30,40,50,60]},
+                           'DT'   : {'max_depth' : [None,2,3,4,5,6,10,20],
                                      'max_features' : [None,0.25,0.5,0.75,1,'sqrt'],
-                                     'min_samples_split': [2,5,10],
-                                     'min_samples_leaf' : [1,2,4,8]},
+                                     'min_samples_split': [2,5,10,15],
+                                     'min_samples_leaf' : [1,2,4,8,10,12]},
                            'RFR'  : {'max_depth' : [None,2,3,4,5,6,10],
                                      'n_estimators': [10,20,30,50,100,200],
                                      'max_features' : [0.25,0.5,0.75,1,'sqrt'],
@@ -446,9 +554,9 @@ class hyperparameter_tuning:
                                      'min_samples_leaf' : [1,2,4,8],
                                      'bootstrap' : [True,False]},
                            'GBR'  : {'max_depth' : [None,2,3,4,5,6,10],
-                                     'n_estimators': [50,100,200],
+                                     'n_estimators': [50,100,200,250,300],
                                      'min_samples_split': [2,5,10],
-                                     'min_samples_leaf' : [1,2,4],
+                                     'min_samples_leaf' : [1,2,4,5,6,7,8],
                                      'bootstrap' : [True,False]}}
 
         self.best_model, self.best_params, self.best_score = self.perform_tuning()
