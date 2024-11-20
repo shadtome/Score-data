@@ -10,3 +10,5 @@ get_data/test.ipynb
 data_manipulation/__pycache__/
 
 models/__pycache__/
+pictures/
+models/saved_models/

@@ -11,6 +11,8 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error,root_mean_squared_error,r2_score,mean_absolute_error,mean_absolute_percentage_error
 import random
+import os
+import json
 
 
 class general_Regression:
@@ -155,6 +157,12 @@ class general_Regression:
         except ValueError as e:
             print(e)
 
+        
+        
+        
+        
+
+
     def evaluate(self,test_data):
         """Evalutes the data based on the train and test data"""
         t_test = self._transform_data(test_data.copy())
@@ -251,11 +259,12 @@ class general_Regression:
         print(f'MAPE for test: mean: {np.mean(test_mapes)} std: {np.std(test_mapes)}\n')
 
 class hyperparameter_tuning_general:
-    def __init__(self,data,n_iter, cv,scale=None, type = None):
+    def __init__(self,data,n_iter, cv,scale=None, type = None,beta=0):
         """Takes in the data, number of iterations (n_iter) and number of cross validations (cv)
         and randomly looks through the possible values for each of the parameters and performs cross-validation.
         It finds the parameters with the best score"""
         self.scale=scale
+        self.beta=beta
         self.data = data
         self.n_iter = n_iter
         self.cv = cv
@@ -272,21 +281,23 @@ class hyperparameter_tuning_general:
                                      'min_samples_split': [2,5,10,15],
                                      'min_samples_leaf' : [1,2,4,8,10,12]},
                            'RFR'  : {'max_depth' : [None,2,3,4,5,6,10],
-                                     'n_estimators': [10,20,30,50,100,200],
+                                     'n_estimators': [10,20,30,40,50,60,70,80],
                                      'max_features' : [0.25,0.5,0.75,1,'sqrt'],
                                      'min_samples_split': [2,5,10],
                                      'min_samples_leaf' : [1,2,4,8],
                                      'bootstrap' : [True,False]},
                            'GBR'  : {'max_depth' : [None,2,3,4,5,6,10],
-                                     'n_estimators': [50,100,200,250,300],
+                                     'n_estimators': [10,20,30,40,50,60,70,80],
                                      'min_samples_split': [2,5,10],
                                      'min_samples_leaf' : [1,2,4,5,6,7,8],
                                      'bootstrap' : [True,False]}}
 
-        self.best_model, self.best_params, self.best_score = self.perform_tuning()
+        self.best_model, self.best_params, self.best_score, self.best_RMSE_train,self.best_RMSE_test = self.perform_tuning()
 
-    def perform_tuning(self,beta=0.5):
+    def perform_tuning(self):
         best_score = np.inf
+        best_RMSE_train = None
+        best_RMSE_test = None
         best_param = None
         best_model = None
         kf = KFold(n_splits=self.cv,shuffle=True,random_state=42)
@@ -304,6 +315,8 @@ class hyperparameter_tuning_general:
             model=None
 
             cv_scores = []
+            cv_train = []
+            cv_test = []
 
             for train_index, val_index in kf.split(self.data):
 
@@ -318,17 +331,23 @@ class hyperparameter_tuning_general:
                 target_test = model.scale_target(data_val[model.target])
                 score_train = root_mean_squared_error(target_train,y_pred_train)
                 score_test = root_mean_squared_error(target_test,y_pred_test) 
-                score = beta * score_test + (1-beta) * score_train
+                #score with penatly term
+                score = score_test + self.beta*abs(score_train - score_test)
+                cv_train.append(score_train)
+                cv_test.append(score_test)
                 cv_scores.append(score)
-
             mean_cv_score = np.mean(cv_scores)
+            mean_cv_train = np.mean(cv_train)
+            mean_cv_test = np.mean(cv_test)
 
             if mean_cv_score<best_score:
                 best_score = mean_cv_score
+                best_RMSE_train = mean_cv_train
+                best_RMSE_test = mean_cv_test
                 best_param= {'model' : model_type, 'param' : param}
                 best_model = model
             
-        return best_model, best_param, best_score
+        return best_model, best_param, best_score,best_RMSE_train,best_RMSE_test
 
 
 class G_Pos(general_Regression):
@@ -644,7 +663,7 @@ class ensamble_model:
 
 
 class hyperparameter_tuning:
-    def __init__(self,data,n_iter, cv,scale=None):
+    def __init__(self,data,n_iter, cv,scale=None,beta=0):
         """Takes in the data, number of iterations (n_iter) and number of cross validations (cv)
         and randomly looks through the possible values for each of the parameters and performs cross-validation.
         It finds the parameters with the best score"""
@@ -652,6 +671,7 @@ class hyperparameter_tuning:
         self.data = data
         self.n_iter = n_iter
         self.cv = cv
+        self.beta=beta
         # Here we will put all the possible combinations of parameters we would like to look at
         self.models = ['LR','LASSO','RIDGE','ELASTICR','KNN','DT','RFR','GBR']
         self.parameters = {'LR': {},
@@ -664,13 +684,13 @@ class hyperparameter_tuning:
                                      'min_samples_split': [2,5,10,15],
                                      'min_samples_leaf' : [1,2,4,8,10,12]},
                            'RFR'  : {'max_depth' : [None,2,3,4,5,6,10],
-                                     'n_estimators': [10,20,30,50,100,200],
+                                     'n_estimators': [10,20,30,40,50,60,70,80],
                                      'max_features' : [0.25,0.5,0.75,1,'sqrt'],
                                      'min_samples_split': [2,5,10],
                                      'min_samples_leaf' : [1,2,4,8],
                                      'bootstrap' : [True,False]},
                            'GBR'  : {'max_depth' : [None,2,3,4,5,6,10],
-                                     'n_estimators': [50,100,200,250,300],
+                                     'n_estimators': [10,20,30,40,50,60,70,80],
                                      'min_samples_split': [2,5,10],
                                      'min_samples_leaf' : [1,2,4,5,6,7,8],
                                      'bootstrap' : [True,False]}}
@@ -711,9 +731,15 @@ class hyperparameter_tuning:
 
                 model.fit(data_train)
                 
-                y_pred = model.predict(data_val)
-                target = model.scale_target(data_val[model.target])
-                score = root_mean_squared_error(target,y_pred)
+                y_pred_train = model.predict(data_train)
+                y_pred_test = model.predict(data_val)
+
+                target_train = model.scale_target(data_train[model.target])
+                target_test = model.scale_target(data_val[model.target])
+
+                score_train = root_mean_squared_error(target_train,y_pred_train)
+                score_test = root_mean_squared_error(target_test,y_pred_test)
+                score = score_test + self.beta*abs(score_test - score_train)
                 cv_scores.append(score)
 
             mean_cv_score = np.mean(cv_scores)
@@ -727,6 +753,41 @@ class hyperparameter_tuning:
                 best_model = model
             
         return best_model, best_param, best_score
+    
+
+def save_general(fd,desc,params, score, RMSE_train,RMSE_test):
+        
+        if os.path.exists(fd)==False:
+            os.mkdir(fd)
+
+        dir = os.path.join(fd,'general_models.csv')
+        data = {}
+
+        if not os.path.exists(dir):
+            # Create the file
+            df_empty = pd.DataFrame(data)
+            df_empty.to_csv(dir)
+
+        # Saved the general score
+        data['score'] = [score]
+        data['desc'] = [desc]
+        # Get type of model and the parameters saved
+        data['model'] = params['model']
+        for k,v in params['param'].items():
+            data[k] = [v]
+        # save any extra columns
+        data['RMSE_train'] = [RMSE_train]
+        data['RMSE_test'] = [RMSE_test]
+
+        df = pd.DataFrame(data)
+        old_df = pd.read_csv(dir)
+        new_df = pd.concat([old_df,df])
+        new_df.to_csv(dir,index=False)
+
+
+
+        
+
                 
 
 

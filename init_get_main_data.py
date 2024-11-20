@@ -4,10 +4,10 @@ import get_data.merge_data.merge_transfer_understat as mus
 import get_data.merge_data.merge_sofa_under as msu
 import sqlite3
 import pandas as pd
-import get_data.train_test_splitter as tts
-import get_data.train_test_splitter_aggall_and_6_months as tts6
-import get_data.train_test_splitter_ba_6 as ttsba
-import get_data.train_test_splitter_ba_12 as ttsba12
+import get_data.splitters.train_test_splitter as tts
+import get_data.splitters.train_test_splitter_aggall_and_6_months as tts6
+import get_data.splitters.train_test_splitter_ba_6 as ttsba
+import get_data.splitters.train_test_splitter_ba_12 as ttsba12
 
 
 """
