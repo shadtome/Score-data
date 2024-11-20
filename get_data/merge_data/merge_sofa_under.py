@@ -21,6 +21,7 @@ class merge_sofa_under:
         print("Done with Merging Transfermarkt x sofascore and Transfermarkt x understat")
 
     def get_sofa(self):
+        """Get the transfermarkt x sofascore data"""
         fd = 'data/main_data/main_data_sofascore.csv'
         df = pd.read_csv(fd)
         df['date'] = pd.to_datetime(df['date']).dt.date
@@ -28,6 +29,7 @@ class merge_sofa_under:
         return df
     
     def get_under(self):
+        """Get the transfermarkt x understat data"""
         fd = 'data/main_data/main_data_understat.csv'
         df = pd.read_csv(fd)
         df['date'] = pd.to_datetime(df['date']).dt.date
@@ -36,6 +38,7 @@ class merge_sofa_under:
         return df
     
     def combine(self):
+        """Combines the data together"""
         merged_df = pd.merge(self.sofascore_df,self.understat_df,on=['name','date'],how='left',suffixes=('_pg','_us'))
         merged_df['xG'] = merged_df['xG'].fillna(0)
         merged_df['xA'] = merged_df['xA'].fillna(0)
@@ -49,6 +52,7 @@ class merge_sofa_under:
         return merged_df
     
     def change_MV_Inflation(self):
+        """Change the market values based on inflation"""
         self.merged['date'] = pd.to_datetime(self.merged['date'])
         self.merged['year'] = self.merged['date'].dt.year
         self.merged = pd.merge(self.merged,CPI_df,on='year')

@@ -7,6 +7,7 @@ import unicodedata
 
 class merge:
     def __init__(self):
+        """ Merge the transfermarkt data with sofascore"""
         self.sofascore_df = self.get_sofascore()
         self.transfer_df = self.get_transfer()
         self.combined = self.combine()
@@ -14,6 +15,7 @@ class merge:
         print('Done Merging Transfermarkt and Sofascore')
 
     def get_sofascore(self):
+        """Get the sofascore data from the files"""
         fd = os.getcwd()
         fd = os.path.join(fd,'data/sofascore/sofascore_data.csv')
         sofascore = pd.read_csv(fd)
@@ -34,6 +36,7 @@ class merge:
         
         return sofascore
     def get_transfer(self):
+        """Get the transfermarkt data from the database file"""
         con = sql.connect('data/transfermarket/transfermarket.db')
         transfer = pd.read_sql("""WITH clubhistory AS (
                         
@@ -134,6 +137,7 @@ class merge:
     
 
     def combine(self):
+        """Combine the data together"""
         combined = pd.merge_asof(
                     self.sofascore_df,                 
                     self.transfer_df,               
@@ -158,6 +162,8 @@ class merge:
         self.combined.to_csv(save_path,index=False)
 
     def normalize_name(self,name):
+        """This is used to deal with characters that are different in both datasets for the names,
+        by normalizing them"""
         normalized_name = unicodedata.normalize('NFKD',name).encode('ASCII','ignore').decode('utf-8')
         normalized_name = normalized_name.replace('ø','o').replace('Ø','O')
         return normalized_name

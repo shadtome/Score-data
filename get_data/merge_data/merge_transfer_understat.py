@@ -6,6 +6,7 @@ import unicodedata
 
 class merge:
     def __init__(self):
+        """Merge the transferkmarkt data with understat data"""
         self.lineup_df = self.get_understat()
         self.transfer_df = self.get_transfer()
         self.combined = self.combine()
@@ -13,6 +14,7 @@ class merge:
         print('Done merging Transfermarkt and Understat')
 
     def get_understat(self):
+        """Get the appropriate data from the understat database"""
         con = sql.connect('data/understat/understat_game_data/understat_lineup_game_stats.db')
 
         lineup = pd.read_sql("""SELECT  game.date,
@@ -54,6 +56,7 @@ class merge:
         return lineup
     
     def get_transfer(self):
+        """Get the appropriate data from the transfermarkt database"""
         con = sql.connect('data/transfermarket/transfermarket.db')
         transfer = pd.read_sql("""WITH clubhistory AS (
                         
@@ -153,6 +156,7 @@ class merge:
         return transfer
     
     def combine(self):
+        """Combine the data together based on the names, dates"""
         combined = pd.merge_asof(
                     self.lineup_df,                 
                     self.transfer_df,               
@@ -175,6 +179,7 @@ class merge:
         self.combined.to_csv(save_path,index=False)
 
     def normalize_name(self,name):
+        """This is used to normalize the names with different characters in both data sets"""
         normalized_name = unicodedata.normalize('NFKD',name).encode('ASCII','ignore').decode('utf-8')
         normalized_name = normalized_name.replace('ø','o').replace('Ø','O')
         return normalized_name
