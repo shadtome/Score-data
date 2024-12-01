@@ -21,8 +21,11 @@ class general_Regression:
         Takes in the data we have directly and it will transform it in the appropriate way
         type: This input is for choosing which regression model to use,
             - LR: Linear Regression
+            - PCA_LR: PCA in Linear Regression
             - LASSO: Lasso linear regression
+            - PCA_LASSO: PCA in Lasso linear regression
             - RIDGE: Ridge linear regression
+            - PCA_RIDGE: PCA in Ridge linear regression
             - ELASTICR: Elastic linear regression
             - KNN: k nearest neighbors
             - DT: Decision tree regressor
@@ -49,6 +52,7 @@ class general_Regression:
         self.bootstrap = kwargs.get('bootstrap',True)
         self.learning_rate = kwargs.get('learning_rate',0.9)
         self.subsample = kwargs.get('subsample',1)
+        self.n_components = kwargs.get('n_components',None)
 
         self.scale = scale
         
@@ -80,12 +84,21 @@ class general_Regression:
         
         if self.type == 'LR':
             return LinearRegression()
+        if self.type == 'PCA_LR':
+            return Pipeline([('scaler',StandardScaler()),('pca',PCA(n_components=self.n_components)),
+                             ('lr',LinearRegression())])
         if self.type == 'ELASTICR':
             return Pipeline([('scaler',StandardScaler()),('elastic',ElasticNet(alpha=self.alpha,random_state=self.random_state))])
         if self.type == 'LASSO':
             return Pipeline([('scaler',StandardScaler()),('lasso',Lasso(alpha=self.alpha,random_state=self.random_state))])
+        if self.type == 'PCA_LASSO':
+            return Pipeline([('scaler',StandardScaler()),('pca',PCA(n_components=self.n_components)),
+                             ('lasso',Lasso(alpha=self.alpha,random_state=self.random_state))])
         if self.type == 'RIDGE':
             return Pipeline([('scaler',StandardScaler()),('ridge',Ridge(alpha=self.alpha))])
+        if self.type == 'PCA_RIDGE':
+            return Pipeline([('scaler',StandardScaler()),('pca',PCA(n_components=self.n_components)),
+                             ('ridge',Ridge(alpha=self.alpha))])
         if self.type == 'KNN':
             return Pipeline([('scaler',StandardScaler()),('knn',KNeighborsRegressor(n_neighbors=self.n_neighbors))])
         if self.type == 'DT':
@@ -108,6 +121,20 @@ class general_Regression:
         data = self._get_age(data)
         data = self._indicator_functions(data)
         data[self.target] = self.scale_target(data[self.target])
+        if 'pos_G' not in data.columns:
+            data['pos_G'] = False
+        if 'pos_D' not in data.columns:
+            data['pos_D'] = False
+        if 'pos_M' not in data.columns:
+            data['pos_M'] = False
+        if 'pos_F' not in data.columns:
+            data['pos_F'] = False
+        if 'foot_both' not in data.columns:
+            data['foot_both'] = False
+        if 'foot_left' not in data.columns:
+            data['foot_left'] =False
+        if 'foot_right' not in data.columns:
+            data['foot_right'] = False
         return data
 
     def _get_age(self,data):
@@ -259,7 +286,7 @@ class general_Regression:
         print(f'MAPE for test: mean: {np.mean(test_mapes)} std: {np.std(test_mapes)}\n')
 
 class hyperparameter_tuning_general:
-    def __init__(self,data,n_iter, cv,scale=None, type = None,beta=0):
+    def __init__(self,data, n_iter, cv,model = general_Regression,scale=None, type = None,beta=0):
         """Takes in the data, number of iterations (n_iter) and number of cross validations (cv)
         and randomly looks through the possible values for each of the parameters and performs cross-validation.
         It finds the parameters with the best score"""
@@ -269,6 +296,7 @@ class hyperparameter_tuning_general:
         self.n_iter = n_iter
         self.cv = cv
         self.type=type
+        self.model = model
         # Here we will put all the possible combinations of parameters we would like to look at
         self.models = ['LR','LASSO','RIDGE','ELASTICR','KNN','DT','RFR','GBR']
         self.parameters = {'LR': {},
@@ -281,13 +309,13 @@ class hyperparameter_tuning_general:
                                      'min_samples_split': [2,5,10,15],
                                      'min_samples_leaf' : [1,2,4,8,10,12]},
                            'RFR'  : {'max_depth' : [None,2,3,4,5,6,10],
-                                     'n_estimators': [10,20,30,40,50,60,70,80],
+                                     'n_estimators': [10,20,30,40,50,60,70,80,90],
                                      'max_features' : [0.25,0.5,0.75,1,'sqrt'],
                                      'min_samples_split': [2,5,10],
                                      'min_samples_leaf' : [1,2,4,8],
                                      'bootstrap' : [True,False]},
                            'GBR'  : {'max_depth' : [None,2,3,4,5,6,10],
-                                     'n_estimators': [10,20,30,40,50,60,70,80],
+                                     'n_estimators': [10,20,30,40,50,60,70,80,90],
                                      'min_samples_split': [2,5,10],
                                      'min_samples_leaf' : [1,2,4,5,6,7,8],
                                      'bootstrap' : [True,False]}}
@@ -323,7 +351,7 @@ class hyperparameter_tuning_general:
                 data_train = self.data.iloc[train_index]
                 data_val = self.data.iloc[val_index]
 
-                model = general_Regression(data_train,type=model_type,scale=self.scale,**param)
+                model = self.model(data_train,type=model_type,scale=self.scale,**param)
                 
                 y_pred_train = model.predict(data_train)
                 y_pred_test = model.predict(data_val)
@@ -356,8 +384,11 @@ class G_Pos(general_Regression):
         Takes in the data we have directly and it will transform it in the appropriate way
         type: This input is for choosing which regression model to use,
             - LR: Linear Regression
+            - PCA_LR: PCA in Linear Regression
             - LASSO: Lasso linear regression
+            - PCA_LASSO: PCA in Lasso linear regression
             - RIDGE: Ridge linear regression
+            - PCA_RIDGE: PCA in Ridge linear regression
             - ELASTICR: Elastic linear regression
             - KNN: k nearest neighbors
             - DT: Decision tree regressor
@@ -369,6 +400,9 @@ class G_Pos(general_Regression):
                             'totalKeeperSweeper', 'goalsPrevented', 'touches','blockedScoringAttempt',
                             'yellow_card', 'red_card', 'rating', 'accuratePass',
                             'accurateLongBalls','accurateKeeperSweeper','age']
+        #features = ['minutesPlayed', 'saves',
+        #                     'goalsPrevented', 'red_card', 'rating', 'accuratePass',
+        #                    'accurateLongBalls','age']
 
         super().__init__(data,type=type,features=features,scale = scale,**kwargs)
 
@@ -379,8 +413,11 @@ class D_Pos(general_Regression):
         Takes in the data we have directly and it will transform it in the appropriate way
         type: This input is for choosing which regression model to use,
             - LR: Linear Regression
+            - PCA_LR: PCA in Linear Regression
             - LASSO: Lasso linear regression
+            - PCA_LASSO: PCA in Lasso linear regression
             - RIDGE: Ridge linear regression
+            - PCA_RIDGE: PCA in Ridge linear regression
             - ELASTICR: Elastic linear regression
             - KNN: k nearest neighbors
             - DT: Decision tree regressor
@@ -408,8 +445,11 @@ class M_Pos(general_Regression):
         Takes in the data we have directly and it will transform it in the appropriate way
         type: This input is for choosing which regression model to use,
             - LR: Linear Regression
+            - PCA_LR: PCA in Linear Regression
             - LASSO: Lasso linear regression
+            - PCA_LASSO: PCA in Lasso linear regression
             - RIDGE: Ridge linear regression
+            - PCA_RIDGE: PCA in Ridge linear regression
             - ELASTICR: Elastic linear regression
             - KNN: k nearest neighbors
             - DT: Decision tree regressor
@@ -438,8 +478,11 @@ class F_Pos(general_Regression):
         Takes in the data we have directly and it will transform it in the appropriate way
         type: This input is for choosing which regression model to use,
             - LR: Linear Regression
+            - PCA_LR: PCA in Linear Regression
             - LASSO: Lasso linear regression
+            - PCA_LASSO: PCA in Lasso linear regression
             - RIDGE: Ridge linear regression
+            - PCA_RIDGE: PCA in Ridge linear regression
             - ELASTICR: Elastic linear regression
             - KNN: k nearest neighbors
             - DT: Decision tree regressor
@@ -484,8 +527,11 @@ class ensamble_model:
         """The parameters for the model on goal keepers
         type: This input is for choosing which regression model to use,
             - LR: Linear Regression
+            - PCA_LR: PCA in Linear Regression
             - LASSO: Lasso linear regression
+            - PCA_LASSO: PCA in Lasso linear regression
             - RIDGE: Ridge linear regression
+            - PCA_RIDGE: PCA in Ridge linear regression
             - ELASTICR: Elastic linear regression
             - KNN: k nearest neighbors
             - DT: Decision tree regressor
@@ -501,8 +547,11 @@ class ensamble_model:
         """The parameters for the model on defenders
         type: This input is for choosing which regression model to use,
             - LR: Linear Regression
+            - PCA_LR: PCA in Linear Regression
             - LASSO: Lasso linear regression
+            - PCA_LASSO: PCA in Lasso linear regression
             - RIDGE: Ridge linear regression
+            - PCA_RIDGE: PCA in Ridge linear regression
             - ELASTICR: Elastic linear regression
             - KNN: k nearest neighbors
             - DT: Decision tree regressor
@@ -517,8 +566,11 @@ class ensamble_model:
         """The parameters for the model on midfielders
         type: This input is for choosing which regression model to use,
             - LR: Linear Regression
+            - PCA_LR: PCA in Linear Regression
             - LASSO: Lasso linear regression
+            - PCA_LASSO: PCA in Lasso linear regression
             - RIDGE: Ridge linear regression
+            - PCA_RIDGE: PCA in Ridge linear regression
             - ELASTICR: Elastic linear regression
             - KNN: k nearest neighbors
             - DT: Decision tree regressor
@@ -533,8 +585,11 @@ class ensamble_model:
         """The parameters for the model on forwards
         type: This input is for choosing which regression model to use,
             - LR: Linear Regression
+            - PCA_LR: PCA in Linear Regression
             - LASSO: Lasso linear regression
+            - PCA_LASSO: PCA in Lasso linear regression
             - RIDGE: Ridge linear regression
+            - PCA_RIDGE: PCA in Ridge linear regression
             - ELASTICR: Elastic linear regression
             - KNN: k nearest neighbors
             - DT: Decision tree regressor
@@ -755,12 +810,12 @@ class hyperparameter_tuning:
         return best_model, best_param, best_score
     
 
-def save_general(fd,desc,params, score, RMSE_train,RMSE_test):
+def save_general(fd,name,desc,params, score, RMSE_train,RMSE_test):
         
         if os.path.exists(fd)==False:
             os.mkdir(fd)
 
-        dir = os.path.join(fd,'general_models.csv')
+        dir = os.path.join(fd,f'{name}.csv')
         data = {}
 
         if not os.path.exists(dir):

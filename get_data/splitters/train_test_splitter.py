@@ -88,6 +88,8 @@ class train_test:
         agg_data = agg_data.rename(columns={'date_of_birth_ss': 'dob',
                                              'position_acronym': 'pos', 'market_value_in_eur': 'market_value',
                                              'adjusted_market_value_in_eur': 'adjusted_market_value'})
+
+        #agg_data = agg_data[agg_data['minutesPlayed']>1000]
         
         train,test = train_test_split(agg_data,train_size=train_size,random_state=seed,stratify=agg_data['pos'])
         return train,test
@@ -102,8 +104,8 @@ class train_test:
         if os.path.exists(train_fd)==False:
             os.mkdir(train_fd)
 
-        test_fd = os.path.join(test_fd,'test.csv')
-        train_fd = os.path.join(train_fd,'train.csv')
+        test_fd = os.path.join(test_fd,'test_cutoff.csv')
+        train_fd = os.path.join(train_fd,'train_cutoff.csv')
 
         self.test.to_csv(test_fd,index=False)
         self.train.to_csv(train_fd,index=False)

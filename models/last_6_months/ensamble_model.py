@@ -5,7 +5,7 @@ parent_dir = os.path.dirname(os.path.dirname(os.path.abspath('')))
 print(parent_dir)
 sys.path.insert(0,parent_dir)
 
-import original_dataset.ensamble_model as em
+import main_dataset.ensamble_model as em
 
 class Linear_Regression_6_months(em.general_Regression):
 
