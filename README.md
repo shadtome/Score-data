@@ -1,5 +1,9 @@
-# SCORE: Soccer Cost & Outcome Return Evaluator
-### Predicting Market-values for players in Major European Football Leagues
+# SCORE: Soccer Club Optimization of Recruitment Expenses
+### Predicting market values for players in major European soccer leagues. A 2024 Erdös Institute Project
+
+## Authors
+- Cody Tipton &nbsp;<a href="https://www.linkedin.com/in/cody-tipton-21075417b/"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn" style="height: 1em; width:auto;"/></a> &nbsp; <a href="https://github.com/shadtome"> <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub" style="height: 1em; width: auto;"/></a>
+- Rafael Magaldi &nbsp;<a href="https://www.linkedin.com/in/rafaelmagaldi/"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn" style="height: 1em; width:auto;"/></a> &nbsp; <a href="https://github.com/rmmagaldi"> <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub" style="height: 1em; width: auto;"/></a>
 
 ## Objective 
 Our objective is to use player historical data in their career to predict their current market value for each transfer window. So that clubs can make financially sound investments for players they want to buy.
