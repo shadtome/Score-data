@@ -10,7 +10,7 @@
 We use soccer player's in-game statistics to **predict their market value**. This is useful information for soccer clubs when deciding how much to bid when trying to sign a player.
 
 ## Background
-The soccer transfer market is highly competitive and volatile, with player valuations frequently fluctuating. Clubs have access to two transfer windows per season, when thousands of transfers take place, moving billions of dollars. Clubs often compete to sign the best talent in their budget, so having accurate player valuations is vital for them when determining how much to spend on a new player. These valuations are what allows clubs to make informed financial decisions and ensure sustainable investments that pay off in the field.
+The soccer transfer market is highly competitive and volatile, with player valuations frequently fluctuating. Clubs have access to two transfer windows per season, when thousands of transfers take place, moving billions of dollars. Clubs often compete to sign the best talent in their budget, so having accurate player valuations is vital when determining how much to spend on a new player. These valuations are what allows clubs to make informed financial decisions and ensure sustainable investments that pay off in the field.
 
 ## Dataset
 Our data is sourced from the following websites:
