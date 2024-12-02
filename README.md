@@ -51,15 +51,19 @@ Given the player stats on each match, the approach we decided to follow was to a
 For our exploratory data analysis, we checked the influence of each feature on the market value, noting that players that play on different positions have different sets of features that matter most when determining their market values.
 
 ## Model Testing and Evaluation
-### Baseline Models:
+### Baseline Model:
 
-For these 2 models, we used all the features and the players in the training set.
+For this model, we used all the features and all the players in the training set.
 
 Simple Linear Regression:
     - Train RMSE: 0.986
     - Test RMSE: 1.017
     - This model produces a very skewed distribution for the market values. There is a lot of error as seen by the RMSE, but this is the model we will try to beat with more refined approaches.
-    
+
+### First improved model:
+
+Same dataset as before, but trying gradient boosting instead of linear regression.
+
 Gradient Boosting:
     - Train RMSE: 0.780
     - Test RMSE: 0.859
@@ -67,7 +71,7 @@ Gradient Boosting:
 
 ### Minutes played threshold:
 
-We tested some cutoffs on the minimum amount of minutes played for a player to be consired in the model. The idea was to remove outliers that had very few minutes played, as they do not have enough game time to generate stats that accurately represent them. We settled on a cutoff of 1000 minutes (equivalent to a little over 11 full matches played), which kept a reasonable amount of players (over 7500) while producing the best results:
+We tested some cutoffs on the minimum amount of minutes played for a player to be consired in the model. The idea was to remove outliers that had very few minutes played, as they do not have enough game time to generate stats that accurately represent them. We settled on a cutoff of 1000 minutes (equivalent to a little over 11 full matches played), which kept a reasonable amount of players (over 7500) while producing great results:
 
 Linear Regression:
     - Train RMSE: 0.828
@@ -78,23 +82,44 @@ Gradient Boosting:
     - Test RMSE: 0.775
 
 ### Ensemble Models:
-We split the players into four positions (goalkeeper, defender, midfield and forward), and used our domain knowledge combined with the EDA analysis to decide which features to consider for each position. For example, for goalkeepers, goals scored should not matter much, but saves are more important; the opposite is true for forward players. We then tested the following models for each position, performing extensive hyperparameter tuning on each one: Linear Regression with either L1 (Lasso) or L2 (Ridge) regularization, or both; K-Nearest Neighbors; Decision Trees Regression; Random Forest Regression; Gradient Boosting Regression.
+We split the players into four positions (goalkeeper, defender, midfield and forward) and used our domain knowledge, combined with the EDA analysis, to decide which features to consider for each position. For example, for goalkeepers, goals scored should not matter much, but saves are very important; the opposite is true for forward players. We then tested the following models for each position, performing extensive hyperparameter tuning on each one: Linear Regression with either L1 (Lasso) or L2 (Ridge) regularization, or both; K-Nearest Neighbors; Decision Trees Regression; Random Forest Regression; Gradient Boosting Regression.
 
-What we found is that the best performing model for every position was gradient boosting, with maximum depth of 2 and number of estimators ranging from 20 to 50, depending on the position:
+What we found is that the best performing model for every position was gradient boosting, with a maximum depth of 2 and number of estimators ranging from 20 to 50, depending on the position:
 
 - Train RMSE: 0.666
 - Test RMSE: 0.842
 
 However, comparing the training and test sets, we see this model has significant overfitting.
         
-## Conclusion
+## Conclusions
 
+Our modeling approach aimed to leverage aggregated career statistics to predict soccer player market values effectively. By testing various models and incorporating domain-specific insights, our goal was to provide accurate and actionable predictions for transfer market decisions.
 
+The key ways we tried to improve our results compared to the baseline linear regression model were:
+- Introducing a cutoff on the minimum amount of minutes played
+- Using position-specific features
+- Testing a range of models and performing hyperparameter tuning
+
+Our best performing model was the gradient boosting with the cutoff of 1000 minutes played. which over all positions **improved upon the baseline by ~24%**. The table below shows the RMSE for the models discussed, as well as their percent improvement over the baseline.
 
 ![image](https://github.com/user-attachments/assets/3f9570cd-1adb-4d42-9651-89a3c94fa290)
 
+The main difficulty we observed when trying to predict the market values are that outliers with incredibly high market values, or minimal minutes played, can reduce the generalization power of the models. So we end up with significant overfitting when using models other than linear regression.
 
-This modeling approach aims to leverage both aggregated career statistics and temporal data to predict soccer player market values effectively. By testing various models and incorporating domain-specific insights, the goal is to provide accurate and actionable predictions for transfer market decisions.
+Given these considerations, in the future we aim to expand this project by exploring the following avenues:
+
+- Gatheriong data from more competitions:
+    - Leagues in other countries
+    - National and international cups
+- Creating synthetic data for training
+- Include information about "decisiveness" and "star power" of players:
+    - Titles won
+    - Individual awards
+    - Popularity (jerseys sold, online following, etc)
+- More hyperparameter tuning
+- Create different models for players in each country
+- Give more weight to most recent statistics
+- Test different modeling approaches, like time series
 
 ## Instructions for navigating the repo
 Cody, please change this and the following sections according to however you structured the repo.
