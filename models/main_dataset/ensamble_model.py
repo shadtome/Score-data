@@ -296,7 +296,15 @@ class hyperparameter_tuning_general:
     def __init__(self,data, n_iter, cv,model = general_Regression,scale=None, type = None,beta=0):
         """Takes in the data, number of iterations (n_iter) and number of cross validations (cv)
         and randomly looks through the possible values for each of the parameters and performs cross-validation.
-        It finds the parameters with the best score"""
+        It finds the parameters with the best score
+        cv: the number of cross-validation loops for each randomized model
+        model: takes in any subclass of general_Regression
+        scale: the scale of the target variable
+        type: the type of model to go through the hyperparameter tuning.  Default is None, which makes it go 
+                through all the possible models, like linear regression, K nearest neighbors, decision tree, random
+                forest, and gradient boost.
+        beta: this is the penalizing factor in
+                score = score_holdout + beta*|score_holdout - score_train|"""
         self.scale=scale
         self.beta=beta
         self.data = data
@@ -330,6 +338,7 @@ class hyperparameter_tuning_general:
         self.best_model, self.best_params, self.best_score, self.best_RMSE_train,self.best_RMSE_test = self.perform_tuning()
 
     def perform_tuning(self):
+        """Perform the hyperparameter tuning"""
         best_score = np.inf
         best_RMSE_train = None
         best_RMSE_test = None
@@ -780,6 +789,7 @@ class hyperparameter_tuning:
         self.best_model, self.best_params, self.best_score = self.perform_tuning()
 
     def perform_tuning(self):
+        """Perform the hyperparameter tuning"""
         best_score = np.inf
         best_param = {'G': None, 'D' : None, 'M': None, 'F': None}
         best_model = None
@@ -838,7 +848,7 @@ class hyperparameter_tuning:
     
 
 def save_general(fd,name,desc,params, score, RMSE_train,RMSE_test):
-        
+    
         if os.path.exists(fd)==False:
             os.mkdir(fd)
 

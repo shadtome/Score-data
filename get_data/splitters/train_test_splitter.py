@@ -44,8 +44,9 @@ columns_mean = ['rating','accuratePass','accurateLongBalls','accurateCross',
 
 
 class train_test:
-    def __init__(self,train_size,seed):
+    def __init__(self,train_size,seed,cutoff=0):
         """A class that gives a fixed train test split of our main data and transforms"""
+        self.cutoff=cutoff
         self.train, self.test = self.get_splits(train_size,seed)
         self.save()
 
@@ -89,7 +90,7 @@ class train_test:
                                              'position_acronym': 'pos', 'market_value_in_eur': 'market_value',
                                              'adjusted_market_value_in_eur': 'adjusted_market_value'})
 
-        #agg_data = agg_data[agg_data['minutesPlayed']>1000]
+        agg_data = agg_data[agg_data['minutesPlayed']>=self.cutoff]
         
         train,test = train_test_split(agg_data,train_size=train_size,random_state=seed,stratify=agg_data['pos'])
         return train,test
@@ -104,8 +105,12 @@ class train_test:
         if os.path.exists(train_fd)==False:
             os.mkdir(train_fd)
 
-        test_fd = os.path.join(test_fd,'test_cutoff.csv')
-        train_fd = os.path.join(train_fd,'train_cutoff.csv')
+        if self.cutoff==0:
+            test_fd = os.path.join(test_fd,'test.csv')
+            train_fd = os.path.join(train_fd,'train.csv')
+        else:
+            test_fd = os.path.join(test_fd,f'test_cutoff_{self.cutoff}.csv')
+            train_fd = os.path.join(train_fd,f'train_cutoff_{self.cutoff}.csv')
 
         self.test.to_csv(test_fd,index=False)
         self.train.to_csv(train_fd,index=False)

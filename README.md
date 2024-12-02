@@ -131,20 +131,173 @@ Given these considerations, in the future we aim to expand this project by explo
 
 ## Instructions for navigating the repo
 
+There is example code in the ```example_code.ipynb``` with more description about this repo.
 
 
-## Conda Enviroment
+### Conda Enviroment
 Make the conda enviroment by running
 ```console
 conda env create --file=environment.yml
 ```
-## Downloading the data
+### Downloading the data
 
-
-## Sample Code
+To download the data, you just need to run the following code
 
 ```python
-import sample code
+import get_data.get_all_data as gad 
+gad.get_data_merge_split()
+
+    # Get the data
+train = pd.read_csv('data/main_data/train/train.csv')
+train_cutoff = pd.read_csv('data/main_data/train/train_cutoff_1000.csv')
+
+test = pd.read_csv('data/main_data/test/test.csv')
+test_cutoff = pd.read_csv('data/main_data/test/test_cutoff_1000.csv')
+```
+
+### Creating different models
+We constructed a couple of classes built to make different types of models and to ensemble them together into one 
+big model.
+
+To access these classes, import the following
+
+```python
+import models.main_dataset.ensamble_model as em
+
+# Example of a generalized_Regression model
+# This gives us a linear regression model
+ex_LR = em.general_Regression(train,type='LR')
+
+#This gives us a linear regression with L2 regularization and regularization factor of 4
+ex_RIDGE = em.general_Regression(train,type='RIDGE',alpha=4)
+
+# This gives us a random forest regression model with the various parameters
+ex_RFR = em.general_Regression(train,type='RFR',scale='log',max_depth=4,n_estimators=20,min_sample_leaf=2 ,bootstrap=True) 
+
+# This gives us a Gradient Boost regression model with the various parameters
+ex_GBR = em.general_Regression(train,type='GBR',scale='log',max_depth=4,n_estimators=20,min_sample_leaf=2 ,bootstrap=True) 
+
+# In each of these, you can perform a cross-validation
+ex_LR.perform_CV()
+ex_RIDGE.perform_CV()
+ex_RFR.perform_CV()
+ex_GBR.perform_CV()
+
+```
+Hyperparameter tuning on the ```general_Regression``` class
+
+```python
+# One can perform hyperparameter tuning on this generalized regression class. You can specify type="something"
+# and it will only use parameters for that type of model, otherwise, it will randomly go through different models 
+# and their corresponding parameters.
+
+ex_hp = em.hyperparameter_tuning_general(train,n_iter=10,cv=3,model=em.general_Regression,scale='log',beta=1,type=None)
+
+# Perform the tuning
+ex_hp.perform_tuning()
+
+# Outputs the best parameters it found and the score.
+print(ex_hp.best_params)
+print(ex_hp.best_score)
+
+# This is the best model it found, this is a general_Regression class if model=em.general_Regression, otherwise
+# it will be any model that is inherited from general_Regression.
+ex_hp.best_model
+
+```
+Building models for each position
+
+```python
+# Build models for each position
+
+#goalkeeper position model
+g_pos = em.G_Pos(train,type='LR',scale='log')
+
+# defender position model
+d_pos = em.D_Pos(train,type='RIDGE',scale='log',alpha=4)
+
+# Midfielder position model
+m_pos = em.M_Pos(train,type='RFR',scale='log',max_depth=4,n_estimators=20,min_sample_leaf=2 ,bootstrap=True)
+
+# Forward position model
+f_pos = em.F_Pos(train,type='GBR',scale='log',max_depth=4,n_estimators=20,min_sample_leaf=2 ,bootstrap=True)
+
+# Since these are inherited classes, they have the same methods as general_Regression class
+```
+Construct Ensemble models for each of the positions
+```python
+
+# Now we can talk about our ensemble model, which is essentially takes in each of the position models like above
+
+en_model = em.ensamble_model(scale='log')
+
+# Put the parameters for each position
+en_model.G_parameters(type='LR')
+en_model.D_parameters(type='RIDGE',alpha=4)
+en_model.M_parameters(type='RFR',max_depth=4,n_estimators=20,min_sample_leaf=2 ,bootstrap=True)
+en_model.F_parameters(type='GBR',max_depth=4,n_estimators=20,min_sample_leaf=2 ,bootstrap=True)
+
+# Can perform cross-validation
+en_model.perform_CV(train,n_splits=5)
+
+#Fit the model
+en_model.fit(train)
+
+# Makes a predictions, but it is not scaled back
+predictions = en_model.predict(test)
+
+
+# This makes a prediction, but it scales it back to the original scale (before the ln(1+x))
+predictions_scaled_back = en_model.predict_scaled(test)
+
+```
+Hyperparameter tuning for the ensemble model
+```python
+
+# To do hyperparameter tuning for the ensamble model, we use a specific class.  Note that beta is the penalizing constant
+
+en_hp = em.hyperparameter_tuning(train,n_iter=10,cv=3,scale='log',beta=1)
+
+# Perform the tuning
+en_hp.perform_tuning()
+
+# Outputs the best parameters it found and the score
+print(en_hp.best_params)
+print(en_hp.best_score)
+
+# This is the best model that it outputs, it is a ensemble_model class and has all the usual methods for that class
+en_hp.best_model
+```
+
+### Main Model
+
+For our main model, you can either grab it from a certain function, or define it with the following parameters
+
+```python
+import models.main_model.main_model as mm
+main_model = mm.main_model()
+```
+
+This is just a ensemble_model class as follows:
+
+```python
+import models.main_dataset.ensamble_model as em
+
+main_model = em.ensamble_model(scale='log')
+
+main_modelmodel.G_parameters(type ='GBR',alpha=8,max_depth=2,n_estimators=30,
+                                    min_samples_split=2,min_samples_leaf=6,bootstrap=True)
+
+main_model.D_parameters(type ='GBR', alpha=8,max_depth=2,n_estimators=20,
+                                    min_samples_split=10,min_samples_leaf=6,bootstrap=True)
+
+main_model.M_parameters(type='GBR',alpha=8,max_depth=2,n_estimators=20,
+                                    min_samples_split=10,min_samples_leaf=7,bootstrap=True)
+
+main_model.F_parameters(type = 'GBR',alpha=8,max_depth=2,n_estimators=20,
+                                    min_samples_split=10,min_samples_leaf=6,bootstrap=True)
+
+main_model.fit(train)
 ```
 
 
