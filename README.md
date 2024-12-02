@@ -130,7 +130,8 @@ Given these considerations, in the future we aim to expand this project by explo
 - Test different modeling approaches, like time series
 
 ## Instructions for navigating the repo
-Cody, please change this and the following sections according to however you structured the repo.
+
+
 
 ## Conda Enviroment
 Make the conda enviroment by running

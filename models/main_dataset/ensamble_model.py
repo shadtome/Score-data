@@ -173,6 +173,13 @@ class general_Regression:
         X_data = self._transform_data(X_data)
         return self.model.predict(X_data[self.features])
     
+    def predict_scaled(self,X):
+        """Takes in the dataframe of data, with the features and the target column in it and give
+        a prediction on that data scaled back."""
+        X_data = X.copy()
+        X_data = self._transform_data(X_data)
+        return self.scale_target_back(self.model.predict(X_data[self.features]))
+    
     def predict_player(self,X,player):
         X_data = X.copy()
         X_data = self._transform_data(X_data)
@@ -642,6 +649,26 @@ class ensamble_model:
             X.loc[X['pos'] == 'F','prediction'] = self.F_model.predict(X_F)
         
         return X[['prediction']]
+    
+    def predict_scaled(self,data):
+        """Predicts the target for input data"""
+        X = data.copy()
+        X_G = X.loc[X['pos'] == 'G']
+        X_D = X.loc[X['pos'] == 'D']
+        X_M = X.loc[X['pos'] == 'M']
+        X_F = X.loc[X['pos'] == 'F']
+
+        if X_G.empty== False:
+            X.loc[X['pos'] == 'G','prediction'] = self.G_model.predict_scaled(X_G)
+        if X_D.empty == False:
+            X.loc[X['pos'] == 'D','prediction'] = self.D_model.predict_scaled(X_D)
+        if X_M.empty == False:
+            X.loc[X['pos'] == 'M','prediction'] = self.M_model.predict_scaled(X_M)
+        if X_F.empty == False:
+            X.loc[X['pos'] == 'F','prediction'] = self.F_model.predict_scaled(X_F)
+        
+        return X[['prediction']]
+
     
 
     def perform_CV(self,data,n_splits=10):
