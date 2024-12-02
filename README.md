@@ -47,6 +47,8 @@ We also want to make sure the model has generalization power when presented to n
 ## Feature Engineering and Target Preprocessing
 Given the player stats on each match, the approach we decided to follow was to aggregate the statistics up to the current date or whenenever the player stopped playing (using sums or averages, depending on the feature). We also chose to use the last known market value for each player as the target, and adjusted it for inflation when it was not current (for instance, for players who stopped playing before the current season). We noted the target had high skewness and kurtosis, which was causing some negative market value predictions with linear regression, so to make the distribution closer to a normal one, we decided to apply ln(1+x) to the market values. This also has the benefit of helping reduce outliers, as now the range of the target is between the values of 10 and 20. We then split the dataset into training (80%) and testing (20%) sets, ensuring diversity for player profiles and making sure there are proportional amounts of players for each position in each set.
 
+![image](https://github.com/user-attachments/assets/008ccae8-3276-4d96-8d48-3111530db12e)
+
 ## EDA
 For our exploratory data analysis, we checked the influence of each feature on the market value, noting that players that play on different positions have different sets of features that matter most when determining their market values.
 
