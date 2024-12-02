@@ -10,7 +10,7 @@
 We use soccer player's in-game statistics to **predict their market value**. This is useful information for soccer clubs when deciding how much to bid when trying to sign a player.
 
 ## Background
-The soccer transfer market is highly competitive and volatile, with player valuations frequently fluctuating. Clubs have access to two transfer windows per season, when thousands of transfers take place, moving billions of dollars. Clubs often compete to sign the best talent in their budget, so having accurate player valuations is vital when determining how much to spend on a new player. These valuations are what allows clubs to make informed financial decisions and ensure sustainable investments that pay off in the field.
+The soccer transfer market is highly competitive and volatile, with player valuations frequently fluctuating. Clubs have access to two transfer windows per season, when thousands of transfers take place worldwide, moving billions of dollars. Clubs often compete to sign the best talent within their budget, so having accurate player valuations is vital when determining how much to spend on a new player. These valuations are what allows clubs to make informed financial decisions and ensure sustainable investments that pay off in the field.
 
 ## Dataset
 Our data is sourced from the following websites:
@@ -65,26 +65,27 @@ Gradient Boosting:
     Test RMSE: 0.859
     This is already a significant improvement over linear regression, but it is overfitting
 
+### Minutes played threshold:
 
-### New Models/Approaches:
+We tested some cutoffs on the minimum amount of minutes played for a player to be consired in the model. The idea was to remove outliers that had very few minutes played, as they do not have enough game time to generate stats that accurately represent them. We settled on a cutoff of 1000 minutes (equivalent to a little over 11 full matches played), which kept a reasonable amount of players (over 7500) while producing the best results:
 
-Feature Selection:
-    Identify significant features for each position.
-    Tailor models for specific positions to enhance prediction accuracy.
+Linear Regression:
+    Train RMSE: 0.828
+    Test RMSE: 0.841
 
-XGBoost Regression:
-    Implement to reduce variance and improve upon decision tree performance.
+Gradient Boosting:
+    Train RMSE: 0.687
+    Test RMSE: 0.775
 
-Ensemble Models:
-    Develop ensembles of linear regression models based on position, league, and team, incorporating quadratic and cubic features when needed.
-    Introduce penalties for age to account for market depreciation.
+### Ensemble Models:
+We split the players into four positions (goalkeeper, defender, midfield and forward), and used our domain knowledge combined with the EDA analysis to decide which features to consider for each position. For example, for goalkeepers, goals scored should not matter much, but saves are more important; the opposite is true for forward players. We then tested the following models for each position, performing extensive hyperparameter tuning on each one: Linear Regression with either L1 (Lasso) or L2 (Ridge) regularization, or both; K-Nearest Neighbors; Decision Trees Regression; Random Forest Regression; Gradient Boosting Regression.
 
-Ensemble of XGBoost:
-    Create position-based ensembles to leverage XGBoost's strengths in handling complex interactions.
+What we found is that the best performing model for every positions was gradient boosting, with maximum depth of 2 and number of estimators ranging from 20 to 50, depending on the position:
 
-Extended Time-Series Features:
-    Introduce datasets with aggregated results up to 6 months ago, adding new columns for the past 6 months.
-    Experiment with 12-month aggregation to capture longer-term trends.
+Train RMSE: 0.666
+Test RMSE: 0.842
+
+However, it has significant overfitting.
         
 ## Conclusion
 This modeling approach aims to leverage both aggregated career statistics and temporal data to predict soccer player market values effectively. By testing various models and incorporating domain-specific insights, the goal is to provide accurate and actionable predictions for transfer market decisions.
