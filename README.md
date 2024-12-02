@@ -10,32 +10,39 @@
 We use soccer player's in-game statistics to **predict their market value**. This is useful information for soccer clubs when deciding how much to bid when trying to sign a player.
 
 ## Background
-The soccer transfer market is highly competitive and volatile, with player valuations frequently fluctuating. Clubs have access to two transfer windows per season, when thousands of transfers take place, moving billions of dollars. Clubs often compete to sign the best talent in their price-range, so having accurate player valuations is vital for them when determining how much to spend on a new player. These valuations are what allows clubs to make informed financial decisions and ensure sustainable investments that pay off in the field.
-
-## Stakeholders
-
-Our stakeholders are European soccer clubs across various leagues, including both large, established clubs and smaller, emerging teams. They have a vested interest in optimizing the buying and selling of players to enhance both sporting performance and financial sustainability. These clubs seek data-driven insights to avoid overpaying for talent, identify undervalued players, and make informed transfer decisions. Ultimately, their goal is to maximize returns on player investments, maintain competitive squads, and achieve long-term financial health within the volatile football transfer market.
-
-Another potential niche for the models developed in this project are fantasy soccer player, who seek accurate player valuations to optimize their fantasy teams
-
-- Prediction Accuracy
-    - Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), Mean Absolute Percentage Error (MAPE) and R² of predicted market values
-
-## Possible Product Avenues
-
-- Data-driven recommendations
-    - Generate recommendations for transfers based on the club's financial constraints.
+The soccer transfer market is highly competitive and volatile, with player valuations frequently fluctuating. Clubs have access to two transfer windows per season, when thousands of transfers take place, moving billions of dollars. Clubs often compete to sign the best talent in their budget, so having accurate player valuations is vital for them when determining how much to spend on a new player. These valuations are what allows clubs to make informed financial decisions and ensure sustainable investments that pay off in the field.
 
 ## Dataset
 Our data is sourced from the following websites:
 
 - Transfermarkt: https://www.transfermarkt.us/
-    - This has the transfer fees, market values, and general stats about each player in the European football leagues.
+    - This has the transfer fees, market values, and general stats about players worldwide.
 - Sofascore: https://www.sofascore.com/
-    - This contains all the player and team stats in every game, including a sofascore rating measuring how well a player is in a match.
+    - This contains all the player and team stats in every professional game, including a sofascore rating measuring how well a player did in a match.
 - Understat: https://understat.com/
     - This contains some general stats about each player and game in the English Premier League, La Liga, Bundesliga, Ligue 1, Serie A, and Russian Premier League.
 
+For the Transfermarkt data, we were able to use a dataset available on Kaggle (https://www.kaggle.com/datasets/davidcariboo/player-scores) that is being automatically updated, so we have up-to-date information on the market values of all players.
+As for the player stats, we performed web scraping to gather them from Understat (using Beautiful Soup) and Sofascore (using selenium and Sofascore's API). We chose to gather data from the top 10 strongest soccer leagues in Europe (https://theanalyst.com/2024/10/strongest-leagues-world-football-opta-power-rankings), across as many seasons as they had data for (ranging from 5 to 11 seasons depending on the league).
+
+Therefore, when combining these data sources, we end up with over 10k players, and have all their in-game stats as well as their personal information like height and date of birth.
+
+## Stakeholders
+
+Our stakeholders are European soccer clubs across various leagues, including both large, established clubs and smaller, emerging teams. They have a vested interest in optimizing the buying and selling of players to enhance both sporting performance and financial sustainability. These clubs seek data-driven insights to avoid overpaying for talent, identify undervalued players, and make informed transfer decisions. Ultimately, their goal is to maximize returns on player investments, maintain competitive squads, and achieve long-term financial health within the volatile football transfer market.
+
+Another potential niche for the models developed in this project are fantasy soccer players, who seek accurate player valuations to optimize their fantasy teams.
+
+## Key Performance Indicators
+We want our model to be able to predict market values, so having good accuracy is vital. With that goal in mind, we use the following metrics for all models tested:
+
+- Mean Squared Error (MSE)
+- Root Mean Squared Error (RMSE)
+- Mean Absolute Error (MAE)
+- Mean Absolute Percentage Error (MAPE)
+- R²
+
+We also want to make sure the model has generalization power when met with new data, so we use these metrics on both the training and testing sets, and compare them.
 
 ## Data Preparation and Feature Engineering
 Data Collection:
