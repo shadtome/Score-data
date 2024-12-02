@@ -25,7 +25,7 @@ Our data is sourced from the following websites:
 For the Transfermarkt data, we were able to use a dataset available on Kaggle (https://www.kaggle.com/datasets/davidcariboo/player-scores) that is being automatically updated, so we have up-to-date information on the market values of all players.
 As for the player stats, we performed web scraping to gather them from Understat (using Beautiful Soup) and Sofascore (using selenium and Sofascore's API). We chose to gather data from the top 10 strongest soccer leagues in Europe (https://theanalyst.com/2024/10/strongest-leagues-world-football-opta-power-rankings), across as many seasons as they had data for (ranging from 5 to 11 seasons depending on the league).
 
-Therefore, when combining these data sources, we end up with over 10k players, and have all their in-game stats as well as their personal information like height and date of birth.
+Therefore, when combining these data sources, we end up with over 10k players, and have all their in-game stats as well as their personal information like name, height and date of birth.
 
 ## Stakeholders
 
@@ -34,7 +34,7 @@ Our stakeholders are European soccer clubs across various leagues, including bot
 Another potential niche for the models developed in this project are fantasy soccer players, who seek accurate player valuations to optimize their fantasy teams.
 
 ## Key Performance Indicators
-We want our model to be able to predict market values, so having good accuracy is vital. With that goal in mind, we use the following metrics for all models tested:
+We want to create a predictive model, so having good accuracy is vital. With that goal in mind, we measured the following quantities for all models tested:
 
 - Mean Squared Error (MSE)
 - Root Mean Squared Error (RMSE)
@@ -42,59 +42,55 @@ We want our model to be able to predict market values, so having good accuracy i
 - Mean Absolute Percentage Error (MAPE)
 - R²
 
-We also want to make sure the model has generalization power when met with new data, so we use these metrics on both the training and testing sets, and compare them.
+We also want to make sure the model has generalization power when presented to new data, so we measure all of these on both the training and testing sets, and compare them. In general, we found that the RMSE gives us a good idea of how well a model is performing and how well it generalizes, so when discussing the results we will focus on this metric.
 
-## Data Preparation and Feature Engineering
-Data Collection:
-    Gather comprehensive player statistics, including performance metrics, physical attributes, and historical market values.
+## Feature Engineering and Target Preprocessing
+Given the player stats on each match, the approach we decided to follow was to aggregate the statistics up to the current date or whenenever the player stopped playing (using sums or averages, depending on the feature). We also chose to use the last known market value for each player as the target, and adjusted it for inflation when it was not current (for instance, for players who stopped playing before the current season). We noted the target had high skewness and kurtosis, which was causing some negative market value predictions with linear regression, so to make the distribution closer to a normal one, we decided to apply ln(1+x) to the market values. This also has the benefit of helping reduce outliers, as now the range of the target is between the values of 10 and 20. We then split the dataset into training (80%) and testing (20%) sets, ensuring diversity for player profiles and making sure there are proportional amounts of players for each position in each set.
 
-Approach 1: Aggregated Career Stats
-    Aggregate each player's statistics up to the current date or when the player stopped playing.
-    Use the most recent known market value as the target variable.
-    Split the dataset into training (80%) and testing (20%) sets based on players, ensuring diversity in player profiles and making sure there is a proportional amount of players for each position in the train and test sets.
-
-Approach 2: Time-Series Stock Model (Not pursued due to time constraints)
-    Treat each player as a stock, using player stats and market valuations over time.
-    Predict the next market valuation using historical data with a time interval of 6 months.
-
-Approach 3: Semi-Aggregated Time-Series
-    Initial idea was to aggregate player statistics every 6 months, creating features that reflect progression over time. We would construct a dataset with columns for each 6-month interval, capturing the evolution of player valuations.
-    However, given the timeframe of the project, we chose a simpler approach of using the aggregate data for the final 6 months (or maybe also 12 months) as features.
+## EDA
+For our exploratory data analysis, we checked the influence of each feature on the market value, noting that players that play on different positions have different sets of features that matter most when determining their market values.
 
 ## Model Testing and Evaluation
-Baseline Models Tested:
+### Baseline Models:
 
-    Simple Linear Regression:
-        Initial RMSE of approximately 7 million EUR.
-        Enhanced with quadratic and cubic features, slightly improving RMSE.
+For these 2 models, we used all the features and the players in the training set.
 
-    Decision Tree:
-        Achieved very low RMSE of approximately 6 thousand EUR, but it is overfitting.
-        Identified the need for boosting to improve model robustness.
+Simple Linear Regression:
+    Train RMSE: 0.986
+    Test RMSE: 1.017
+    This model produces a very skewed distribution for the market values. There is a lot of error as seen by the RMSE, but this is the model we will try to beat with more refined approaches.
+    
+Gradient Boosting:
+    Train RMSE: 0.780
+    Test RMSE: 0.859
+    This is already a significant improvement over linear regression, but it is overfitting
 
-New Models/Approaches:
 
-    Feature Selection:
-        Identify significant features for each position.
-        Tailor models for specific positions to enhance prediction accuracy.
+### New Models/Approaches:
 
-    XGBoost Regression:
-        Implement to reduce variance and improve upon decision tree performance.
+Feature Selection:
+    Identify significant features for each position.
+    Tailor models for specific positions to enhance prediction accuracy.
 
-    Ensemble Models:
-        Develop ensembles of linear regression models based on position, league, and team, incorporating quadratic and cubic features when needed.
-        Introduce penalties for age to account for market depreciation.
+XGBoost Regression:
+    Implement to reduce variance and improve upon decision tree performance.
 
-    Ensemble of XGBoost:
-        Create position-based ensembles to leverage XGBoost's strengths in handling complex interactions.
+Ensemble Models:
+    Develop ensembles of linear regression models based on position, league, and team, incorporating quadratic and cubic features when needed.
+    Introduce penalties for age to account for market depreciation.
 
-    Extended Time-Series Features:
-        Introduce datasets with aggregated results up to 6 months ago, adding new columns for the past 6 months.
-        Experiment with 12-month aggregation to capture longer-term trends.
-            
+Ensemble of XGBoost:
+    Create position-based ensembles to leverage XGBoost's strengths in handling complex interactions.
+
+Extended Time-Series Features:
+    Introduce datasets with aggregated results up to 6 months ago, adding new columns for the past 6 months.
+    Experiment with 12-month aggregation to capture longer-term trends.
+        
 ## Conclusion
 This modeling approach aims to leverage both aggregated career statistics and temporal data to predict soccer player market values effectively. By testing various models and incorporating domain-specific insights, the goal is to provide accurate and actionable predictions for transfer market decisions.
 
+## Instructions for navigating the repo
+Cody, please change this and the following sections according to however you structured the repo.
 
 ## Conda Enviroment
 Make the conda enviroment by running
