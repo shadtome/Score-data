@@ -56,38 +56,44 @@ For our exploratory data analysis, we checked the influence of each feature on t
 For these 2 models, we used all the features and the players in the training set.
 
 Simple Linear Regression:
-    Train RMSE: 0.986
-    Test RMSE: 1.017
-    This model produces a very skewed distribution for the market values. There is a lot of error as seen by the RMSE, but this is the model we will try to beat with more refined approaches.
+    - Train RMSE: 0.986
+    - Test RMSE: 1.017
+    - This model produces a very skewed distribution for the market values. There is a lot of error as seen by the RMSE, but this is the model we will try to beat with more refined approaches.
     
 Gradient Boosting:
-    Train RMSE: 0.780
-    Test RMSE: 0.859
-    This is already a significant improvement over linear regression, but it is overfitting
+    - Train RMSE: 0.780
+    - Test RMSE: 0.859
+    - This is already a significant improvement over linear regression, but it is overfitting
 
 ### Minutes played threshold:
 
 We tested some cutoffs on the minimum amount of minutes played for a player to be consired in the model. The idea was to remove outliers that had very few minutes played, as they do not have enough game time to generate stats that accurately represent them. We settled on a cutoff of 1000 minutes (equivalent to a little over 11 full matches played), which kept a reasonable amount of players (over 7500) while producing the best results:
 
 Linear Regression:
-    Train RMSE: 0.828
-    Test RMSE: 0.841
+    - Train RMSE: 0.828
+    - Test RMSE: 0.841
 
 Gradient Boosting:
-    Train RMSE: 0.687
-    Test RMSE: 0.775
+    - Train RMSE: 0.687
+    - Test RMSE: 0.775
 
 ### Ensemble Models:
 We split the players into four positions (goalkeeper, defender, midfield and forward), and used our domain knowledge combined with the EDA analysis to decide which features to consider for each position. For example, for goalkeepers, goals scored should not matter much, but saves are more important; the opposite is true for forward players. We then tested the following models for each position, performing extensive hyperparameter tuning on each one: Linear Regression with either L1 (Lasso) or L2 (Ridge) regularization, or both; K-Nearest Neighbors; Decision Trees Regression; Random Forest Regression; Gradient Boosting Regression.
 
-What we found is that the best performing model for every positions was gradient boosting, with maximum depth of 2 and number of estimators ranging from 20 to 50, depending on the position:
+What we found is that the best performing model for every position was gradient boosting, with maximum depth of 2 and number of estimators ranging from 20 to 50, depending on the position:
 
-Train RMSE: 0.666
-Test RMSE: 0.842
+- Train RMSE: 0.666
+- Test RMSE: 0.842
 
-However, it has significant overfitting.
+However, comparing the training and test sets, we see this model has significant overfitting.
         
 ## Conclusion
+
+
+
+![image](https://github.com/user-attachments/assets/3f9570cd-1adb-4d42-9651-89a3c94fa290)
+
+
 This modeling approach aims to leverage both aggregated career statistics and temporal data to predict soccer player market values effectively. By testing various models and incorporating domain-specific insights, the goal is to provide accurate and actionable predictions for transfer market decisions.
 
 ## Instructions for navigating the repo
