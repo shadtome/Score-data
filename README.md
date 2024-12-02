@@ -1,5 +1,5 @@
 # SCORE: Soccer Club Optimization of Recruitment Expenses
-### Predicting market values for players in major European soccer leagues. 
+### Predicting market values for players in major European soccer leagues
 ### A 2024 Erdös Institute Project
 
 ## Authors
@@ -7,16 +7,17 @@
 - Rafael Magaldi &nbsp;<a href="https://www.linkedin.com/in/rafaelmagaldi/"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn" style="height: 1em; width:auto;"/></a> &nbsp; <a href="https://github.com/rmmagaldi"> <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub" style="height: 1em; width: auto;"/></a>
 
 ## Summary
+We use soccer player's in-game statistics to **predict their market value**. This is useful information for soccer clubs when deciding how much to bid when trying to sign a player.
 
-
-## Objective 
-Our objective is to use player historical data in their career to predict their current market value for each transfer window. So that clubs can make financially sound investments for players they want to buy.
+## Background
+The soccer transfer market is highly competitive and volatile, with player valuations frequently fluctuating. Clubs have access to two transfer windows per season, when thousands of transfers take place, moving billions of dollars. Clubs often compete to sign the best talent in their price-range, so having accurate player valuations is vital for them when determining how much to spend on a new player. These valuations are what allows clubs to make informed financial decisions and ensure sustainable investments that pay off in the field.
 
 ## Stakeholders
 
-Our stakeholders are European football clubs across various leagues, including both large, established clubs and smaller, emerging teams. They have a vested interest in optimizing the buying and selling of players to enhance both sporting performance and financial sustainability. These clubs seek data-driven insights to avoid overpaying for talent, identify undervalued players, and make informed transfer decisions. Ultimately, their goal is to maximize returns on player investments, maintain competitive squads, and achieve long-term financial health within the volatile football transfer market.
+Our stakeholders are European soccer clubs across various leagues, including both large, established clubs and smaller, emerging teams. They have a vested interest in optimizing the buying and selling of players to enhance both sporting performance and financial sustainability. These clubs seek data-driven insights to avoid overpaying for talent, identify undervalued players, and make informed transfer decisions. Ultimately, their goal is to maximize returns on player investments, maintain competitive squads, and achieve long-term financial health within the volatile football transfer market.
 
-## KPI's
+Another potential niche for the models developed in this project are fantasy soccer player, who seek accurate player valuations to optimize their fantasy teams
+
 - Prediction Accuracy
     - Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), Mean Absolute Percentage Error (MAPE) and R² of predicted market values
 
